@@ -114,10 +114,11 @@ function updateRankDisplayStrings() {
 }
 
 function updateExperienceProgressBars() {
-    const xpPct = Math.min(100, Math.floor((state.xp / CONFIG.XP_PER_LEVEL) * 100));
+    const needed = xpRequired(state.level);
+    const xpPct = Math.min(100, Math.floor((state.xp / needed) * 100));
     document.getElementById("xpBar").style.width = `${xpPct}%`;
     document.getElementById("xpText").innerText = `${xpPct}%`;
-    document.getElementById("xpLabelText").innerText = `${state.xp}/${CONFIG.XP_PER_LEVEL}`;
+    document.getElementById("xpLabelText").innerText = `${state.xp}/${needed}`;
     const rankPct = Math.min(100, Math.floor(((state.careerRank - 1) / CONFIG.MAX_RANKS) * 100));
     document.getElementById("rankBar").style.width = `${rankPct}%`;
     document.getElementById("rankText").innerText = `${rankPct}%`;

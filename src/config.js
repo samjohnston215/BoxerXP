@@ -1,8 +1,12 @@
+// XP scaling formula: xpToNextLevel(level) = XP_BASE * level^XP_EXPONENT
+// Level 1→2:  100 XP  |  Level 5→6:  1118 XP  |  Level 10→11: 3648 XP
+// Mirrors Solo Leveling / MMO exponential curve — early levels fast, high levels a grind.
 const CONFIG = {
-    XP_PER_LEVEL: 100,
+    XP_BASE: 100,
+    XP_EXPONENT: 1.5,
     POINTS_PER_LEVEL: 3,
     GATEKEEPER_LEVELS: [5, 10],
-    GATEKEEPER_XP_THRESHOLD: 90,
+    GATEKEEPER_XP_PERCENT: 0.90,   // gate triggers at 90% of that level's XP requirement
     STAT_BASE: 10,
     STAT_MAX: 100,
     TIMER_WORK_SECS: 180,
@@ -14,8 +18,13 @@ const CONFIG = {
         'Heavy Bag':    'str',
         'Footwork':     'sta'
     },
-    SAVE_KEY: "combatCore_v62_save"
+    SAVE_KEY: "combatCore_v63_save"
 };
+
+// Returns XP required to level up FROM a given level (e.g. xpRequired(1) = 100)
+function xpRequired(level) {
+    return Math.floor(CONFIG.XP_BASE * Math.pow(level, CONFIG.XP_EXPONENT));
+}
 
 let state = {
     username: "FIGHTER_01",

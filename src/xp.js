@@ -1,7 +1,16 @@
 function adjustXPEngine(amount) {
     if (state.isExamGateActive && amount > 0) return;
     state.xp += amount;
-    while (state.xp >= CONFIG.XP_PER_LEVEL) { state.xp -= CONFIG.XP_PER_LEVEL; state.level++; triggerFullCelebrationSplash(); }
+    const needed = xpRequired(state.level);
+    while (state.xp >= needed) {
+        state.xp -= needed;
+        state.level++;
+        triggerFullCelebrationSplash();
+        // recalculate needed for the new level (loop handles rapid multi-level)
+        const newNeeded = xpRequired(state.level);
+        if (state.xp >= newNeeded) continue;
+        break;
+    }
     if (state.xp < 0) state.xp = 0;
     evaluateGatekeeperCalculations();
     updateExperienceProgressBars();
@@ -19,7 +28,9 @@ function dismissLevelUpSplash() {
 }
 
 function evaluateGatekeeperCalculations() {
-    const isGate = CONFIG.GATEKEEPER_LEVELS.includes(state.level) && state.xp >= CONFIG.GATEKEEPER_XP_THRESHOLD;
+    const needed = xpRequired(state.level);
+    const threshold = Math.floor(needed * CONFIG.GATEKEEPER_XP_PERCENT);
+    const isGate = CONFIG.GATEKEEPER_LEVELS.includes(state.level) && state.xp >= threshold;
     state.isExamGateActive = isGate;
     document.getElementById("gatekeeperPanel").classList.toggle("active", isGate);
 }
