@@ -134,6 +134,8 @@ function todayTheme() { return 'default'; }
 
 document.addEventListener('DOMContentLoaded', function() {
     loadStateFromStorage();
+    initMissions();
+    buildGlossaryTab();
     applyNightModeBasedOnTime();
     checkDailyReset();
     checkStreakReset();
