@@ -356,11 +356,15 @@ header { background: rgba(17,21,32,0.75); backdrop-filter: blur(12px); -webkit-b
 
     <script>
     // === src/config.js ===
+// XP scaling formula: xpToNextLevel(level) = XP_BASE * level^XP_EXPONENT
+// Level 1→2:  100 XP  |  Level 5→6:  1118 XP  |  Level 10→11: 3648 XP
+// Mirrors Solo Leveling / MMO exponential curve — early levels fast, high levels a grind.
 const CONFIG = {
-    XP_PER_LEVEL: 100,
+    XP_BASE: 100,
+    XP_EXPONENT: 1.5,
     POINTS_PER_LEVEL: 3,
     GATEKEEPER_LEVELS: [5, 10],
-    GATEKEEPER_XP_THRESHOLD: 90,
+    GATEKEEPER_XP_PERCENT: 0.90,   // gate triggers at 90% of that level's XP requirement
     STAT_BASE: 10,
     STAT_MAX: 100,
     TIMER_WORK_SECS: 180,
@@ -372,8 +376,13 @@ const CONFIG = {
         'Heavy Bag':    'str',
         'Footwork':     'sta'
     },
-    SAVE_KEY: "combatCore_v62_save"
+    SAVE_KEY: "combatCore_v63_save"
 };
+
+// Returns XP required to level up FROM a given level (e.g. xpRequired(1) = 100)
+function xpRequired(level) {
+    return Math.floor(CONFIG.XP_BASE * Math.pow(level, CONFIG.XP_EXPONENT));
+}
 
 let state = {
     username: "FIGHTER_01",
@@ -604,10 +613,11 @@ function updateRankDisplayStrings() {
 }
 
 function updateExperienceProgressBars() {
-    const xpPct = Math.min(100, Math.floor((state.xp / CONFIG.XP_PER_LEVEL) * 100));
+    const needed = xpRequired(state.level);
+    const xpPct = Math.min(100, Math.floor((state.xp / needed) * 100));
     document.getElementById("xpBar").style.width = `${xpPct}%`;
     document.getElementById("xpText").innerText = `${xpPct}%`;
-    document.getElementById("xpLabelText").innerText = `${state.xp}/${CONFIG.XP_PER_LEVEL}`;
+    document.getElementById("xpLabelText").innerText = `${state.xp}/${needed}`;
     const rankPct = Math.min(100, Math.floor(((state.careerRank - 1) / CONFIG.MAX_RANKS) * 100));
     document.getElementById("rankBar").style.width = `${rankPct}%`;
     document.getElementById("rankText").innerText = `${rankPct}%`;
@@ -747,7 +757,16 @@ function renderSessionLog() {
 function adjustXPEngine(amount) {
     if (state.isExamGateActive && amount > 0) return;
     state.xp += amount;
-    while (state.xp >= CONFIG.XP_PER_LEVEL) { state.xp -= CONFIG.XP_PER_LEVEL; state.level++; triggerFullCelebrationSplash(); }
+    const needed = xpRequired(state.level);
+    while (state.xp >= needed) {
+        state.xp -= needed;
+        state.level++;
+        triggerFullCelebrationSplash();
+        // recalculate needed for the new level (loop handles rapid multi-level)
+        const newNeeded = xpRequired(state.level);
+        if (state.xp >= newNeeded) continue;
+        break;
+    }
     if (state.xp < 0) state.xp = 0;
     evaluateGatekeeperCalculations();
     updateExperienceProgressBars();
@@ -765,7 +784,9 @@ function dismissLevelUpSplash() {
 }
 
 function evaluateGatekeeperCalculations() {
-    const isGate = CONFIG.GATEKEEPER_LEVELS.includes(state.level) && state.xp >= CONFIG.GATEKEEPER_XP_THRESHOLD;
+    const needed = xpRequired(state.level);
+    const threshold = Math.floor(needed * CONFIG.GATEKEEPER_XP_PERCENT);
+    const isGate = CONFIG.GATEKEEPER_LEVELS.includes(state.level) && state.xp >= threshold;
     state.isExamGateActive = isGate;
     document.getElementById("gatekeeperPanel").classList.toggle("active", isGate);
 }
