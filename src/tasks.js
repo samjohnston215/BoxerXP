@@ -1,12 +1,32 @@
+// Returns the correct mission tier based on current career rank
+function getMissionTier() {
+    if (state.careerRank >= 7) return 'advanced';
+    if (state.careerRank >= 4) return 'intermediate';
+    return 'beginner';
+}
+
 function buildDynamicMissionsByRank() {
-    let activeSet = state.rankMissions.beginner;
-    if (state.careerRank >= 4 && state.careerRank <= 6) activeSet = state.rankMissions.intermediate;
-    else if (state.careerRank >= 7) activeSet = state.rankMissions.advanced;
+    const theme = todayTheme();
+    const tier  = getMissionTier();
+    const activeSet = state.rankMissions[theme][tier];
+
+    // Update day theme banner if element exists
+    const dayBannerEl = document.getElementById('dayThemeBanner');
+    const dayIndex = new Date().getDay();
+    if (dayBannerEl) dayBannerEl.innerText = CONFIG.DAY_LABELS[dayIndex];
+
     ['task1','task2','task3'].forEach(t => {
-        document.getElementById(`name-${t}`).innerText = activeSet[t].name;
-        document.getElementById(`inspect-title-${t}`).innerText = activeSet[t].title;
-        document.getElementById(`inspect-body-${t}`).innerHTML = activeSet[t].body;
+        const task = activeSet[t];
+        document.getElementById(`name-${t}`).innerText = task.name;
+        document.getElementById(`inspect-title-${t}`).innerText = task.title;
+        document.getElementById(`inspect-body-${t}`).innerHTML = task.body;
+        // Update the XP blueprint so stat tracking stays accurate
+        const wrapperId = `wrapper-${t}`;
+        if (state.tasks[wrapperId]) {
+            state.tasks[wrapperId].blueprint = task.blueprint;
+        }
     });
+
     Object.keys(state.tasks).forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.toggle("checked", state.tasks[id].completed);
