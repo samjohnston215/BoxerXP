@@ -1,0 +1,70 @@
+name: Build index.html from src/
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Bundle src/ into index.html
+        run: |
+          CSS=$(cat src/style.css)
+          JS=$(cat src/config.js src/storage.js src/ui.js src/tasks.js src/xp.js src/timer.js src/weight.js src/guide.js)
+
+          # Replace placeholder comment in template with actual CSS
+          python3 - <<'PYEOF'
+          import re
+
+          with open('src/template.html', 'r') as f:
+              html = f.read()
+
+          with open('src/style.css', 'r') as f:
+              css = f.read()
+
+          # Build JS block from all src JS files in order
+          js_files = [
+              'src/config.js',
+              'src/storage.js',
+              'src/ui.js',
+              'src/tasks.js',
+              'src/xp.js',
+              'src/timer.js',
+              'src/weight.js',
+              'src/guide.js'
+          ]
+          js_parts = []
+          for f_path in js_files:
+              with open(f_path, 'r') as f:
+                  js_parts.append(f'    // === {f_path} ===\n' + f.read())
+          js_combined = '\n'.join(js_parts)
+
+          # Inject CSS
+          html = html.replace('/* STYLE_PLACEHOLDER */', css)
+
+          # Inject JS
+          script_tag = f'<script>\n{js_combined}\n    </script>'
+          html = html.replace('<!-- JS_PLACEHOLDER -->', script_tag)
+
+          with open('index.html', 'w') as f:
+              f.write(html)
+
+          print('Build complete: index.html written.')
+          PYEOF
+
+      - name: Commit built index.html
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Auto-build: update index.html from src/ changes"
+          git push
