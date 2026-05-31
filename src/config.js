@@ -1,11 +1,16 @@
 // XP scaling formula: xpToNextLevel(level) = XP_BASE * level^XP_EXPONENT
-// Level 1→2:  100 XP  |  Level 5→6:  1118 XP  |  Level 10→11: 3648 XP
-// Mirrors Solo Leveling / MMO exponential curve — early levels fast, high levels a grind.
+// Level 1→2: 100 XP  |  Level 5→6: 1118 XP  |  Level 10→11: 3648 XP
+//
+// Rank gate levels (level required to unlock next rank):
+// Rank 1→2: Lv5  | Rank 2→3: Lv11 | Rank 3→4: Lv18 | Rank 4→5: Lv26
+// Rank 5→6: Lv35 | Rank 6→7: Lv45 | Rank 7→8: Lv56 | Rank 8→9: Lv68
+// Each rank gate requires 1 more level than the last (growing interval).
 const CONFIG = {
     XP_BASE: 100,
     XP_EXPONENT: 1.5,
     POINTS_PER_LEVEL: 3,
-    GATEKEEPER_LEVELS: [5, 10],
+    // Level at which each rank gate becomes available (index 0 = gate for rank 1→2)
+    RANK_GATE_LEVELS: [5, 11, 18, 26, 35, 45, 56, 68],
     GATEKEEPER_XP_PERCENT: 0.90,   // gate triggers at 90% of that level's XP requirement
     STAT_BASE: 10,
     STAT_MAX: 100,
@@ -18,12 +23,19 @@ const CONFIG = {
         'Heavy Bag':    'str',
         'Footwork':     'sta'
     },
-    SAVE_KEY: "combatCore_v63_save"
+    SAVE_KEY: "combatCore_v64_save"
 };
 
 // Returns XP required to level up FROM a given level (e.g. xpRequired(1) = 100)
 function xpRequired(level) {
     return Math.floor(CONFIG.XP_BASE * Math.pow(level, CONFIG.XP_EXPONENT));
+}
+
+// Returns the level at which the next rank gate unlocks (or null if at max rank)
+function nextRankGateLevel() {
+    const gateIndex = state.careerRank - 1; // rank 1 uses index 0
+    if (gateIndex >= CONFIG.RANK_GATE_LEVELS.length) return null;
+    return CONFIG.RANK_GATE_LEVELS[gateIndex];
 }
 
 let state = {

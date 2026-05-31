@@ -114,13 +114,18 @@ function updateRankDisplayStrings() {
 }
 
 function updateExperienceProgressBars() {
+    // XP bar
     const needed = xpRequired(state.level);
     const xpPct = Math.min(100, Math.floor((state.xp / needed) * 100));
     document.getElementById("xpBar").style.width = `${xpPct}%`;
     document.getElementById("xpText").innerText = `${xpPct}%`;
     document.getElementById("xpLabelText").innerText = `${state.xp}/${needed}`;
+
+    // Rank bar: progress toward the next rank gate
+    const gateLevel = nextRankGateLevel();
     const rankPct = Math.min(100, Math.floor(((state.careerRank - 1) / CONFIG.MAX_RANKS) * 100));
     document.getElementById("rankBar").style.width = `${rankPct}%`;
     document.getElementById("rankText").innerText = `${rankPct}%`;
-    document.getElementById("rankLabelText").innerText = `${state.careerRank} / ${CONFIG.MAX_RANKS} RANKS`;
+    const gateLabel = gateLevel ? `NEXT RANK AT LV ${gateLevel}` : `MAX RANK`;
+    document.getElementById("rankLabelText").innerText = `${state.careerRank} / ${CONFIG.MAX_RANKS} RANKS — ${gateLabel}`;
 }

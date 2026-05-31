@@ -6,7 +6,6 @@ function adjustXPEngine(amount) {
         state.xp -= needed;
         state.level++;
         triggerFullCelebrationSplash();
-        // recalculate needed for the new level (loop handles rapid multi-level)
         const newNeeded = xpRequired(state.level);
         if (state.xp >= newNeeded) continue;
         break;
@@ -28,9 +27,11 @@ function dismissLevelUpSplash() {
 }
 
 function evaluateGatekeeperCalculations() {
+    const gateLevel = nextRankGateLevel();
+    if (!gateLevel) { state.isExamGateActive = false; document.getElementById("gatekeeperPanel").classList.remove("active"); return; }
     const needed = xpRequired(state.level);
     const threshold = Math.floor(needed * CONFIG.GATEKEEPER_XP_PERCENT);
-    const isGate = CONFIG.GATEKEEPER_LEVELS.includes(state.level) && state.xp >= threshold;
+    const isGate = state.level === gateLevel && state.xp >= threshold;
     state.isExamGateActive = isGate;
     document.getElementById("gatekeeperPanel").classList.toggle("active", isGate);
 }
