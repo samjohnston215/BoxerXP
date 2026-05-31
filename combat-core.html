@@ -3,13 +3,1516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>COMBAT CORE</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Combat Core">
+    
+    <title>COMBAT CORE v6.0 PERFECT EDITION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Squada+One&display=swap" rel="stylesheet">
+    
     <style>
-        /* PASTE YOUR FULL PATCHED HTML HERE — file too large for inline tool call */
-        /* Download combat-core-improved.html from the Perplexity artifact and commit manually */
+        :root {
+            --bg-color: #080a0f;
+            --panel-color: #111520;
+            --border-color: #1e2638;
+            --text-color: #e2e8f0;
+            --accent-blue: #87ceeb; /* Pure Baby Blue Tech */
+            --accent-purple: #a855f7;
+            --accent-gold: #fbbf24;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-dim: #64748b;
+        }
+
+        /* iOS Frame Protections & Selection Defenses */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
+        body {
+            padding: 10px 15px 120px 15px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Night Mode Low Glare Overrides */
+        body.night-mode {
+            --bg-color: #030406;
+            --panel-color: #090b10;
+            --border-color: #141923;
+            --text-color: #718096;
+            --accent-blue: #4a5568;
+            --accent-purple: #2d3748;
+            --accent-gold: #718096;
+            --accent-green: #1a202c;
+            --accent-red: #742a2a;
+        }
+
+        /* Full Screen Level Up Splash Overlay */
+        .level-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(8, 10, 15, 0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+        .level-up-overlay.active {
+            display: flex;
+        }
+        .level-up-box {
+            border: 3px solid var(--accent-blue);
+            background: var(--panel-color);
+            padding: 40px 20px;
+            box-shadow: 0 0 50px rgba(135, 206, 235, 0.3);
+            max-width: 90%;
+            width: 340px;
+        }
+        .level-up-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 3.5rem;
+            color: var(--accent-blue);
+            line-height: 1;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            animation: textPulse 0.6s ease infinite alternate;
+        }
+        @keyframes textPulse {
+            from { transform: scale(0.98); text-shadow: 0 0 5px rgba(135,206,235,0.2); }
+            to { transform: scale(1.02); text-shadow: 0 0 20px rgba(135,206,235,0.6); }
+        }
+
+        /* Glassmorphism Navigation Deck Header */
+        header {
+            background: rgba(17, 21, 32, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .username-display {
+            font-size: 1.15rem;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-bottom: 1px dashed var(--accent-dim);
+            padding: 2px 6px;
+        }
+
+        .collapse-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--accent-dim);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Collapsible Core Data Shell */
+        .header-collapsible-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .header-collapsible-content.collapsed {
+            max-height: 0px;
+        }
+
+        /* College Font Style Applied to Rank Status Plates */
+        .rank-title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 3px;
+            margin-top: 5px;
+        }
+
+        .rank-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.9rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .rank-glove-emblem {
+            font-size: 1.6rem;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+
+        .level-display {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--accent-dim);
+        }
+
+        .progress-label {
+            font-size: 0.8rem;
+            text-align: left;
+            color: var(--accent-dim);
+            margin-top: 10px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar-container {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border-color);
+            height: 18px;
+            position: relative;
+        }
+
+        .xp-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #3a86c8, var(--accent-blue));
+            transition: width 0.3s ease;
+        }
+
+        .rank-bar {
+            width: 11%;
+            height: 100%;
+            background: linear-gradient(90deg, #6b21a8, var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+
+        .bar-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            line-height: 18px;
+            top: 0;
+            left: 0;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .streak-fire {
+            color: var(--accent-red);
+            font-size: 1.15rem;
+            margin-top: 14px;
+        }
+
+        .mutation-banner {
+            background: rgba(135, 206, 235, 0.08);
+            border: 1px solid var(--accent-blue);
+            padding: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Layout - Clean Modern Fight Gym Labels */
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: var(--panel-color);
+            color: var(--accent-dim);
+            border: 1px solid var(--border-color);
+            padding: 12px 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--border-color);
+            border-color: var(--accent-blue);
+        }
+
+        .app-page { display: none; }
+        .app-page.active { display: block; }
+
+        .panel {
+            background: var(--panel-color);
+            border: 2px solid var(--border-color);
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .panel-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .panel-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .utility-action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--accent-dim);
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .matrix-wrapper { margin-bottom: 10px; }
+        .matrix-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .matrix-wrapper.checked .matrix-item {
+            border-color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.04);
+        }
+
+        .matrix-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .info-trigger-btn {
+            background: var(--border-color);
+            color: var(--accent-blue);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 5; /* Keep separation click clean */
+        }
+
+        .matrix-text-block { display: flex; flex-direction: column; }
+        .matrix-name { font-size: 1.05rem; }
+        .matrix-reward { font-size: 0.8rem; color: var(--accent-green); margin-top: 2px; }
+
+        .checkbox-custom {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--accent-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: transparent;
+        }
+
+        .matrix-wrapper.checked .checkbox-custom {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.1);
+        }
+
+        .inspection-panel {
+            display: none;
+            background: #090a0d;
+            border: 1px dashed var(--border-color);
+            border-top: none;
+            padding: 12px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+        .inspection-panel.active { display: block; }
+        .inspection-title {
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 2px;
+        }
+
+        /* Boxing Timer Interface */
+        .timer-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .timer-status-label {
+            font-size: 0.8rem;
+            color: var(--accent-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .timer-display {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .timer-display.visual-flash {
+            animation: textFlash 0.5s ease infinite alternate;
+        }
+        @keyframes textFlash {
+            from { color: #fff; text-shadow: 0 0 0px transparent; }
+            to { color: var(--accent-red); text-shadow: 0 0 10px var(--accent-red); }
+        }
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .timer-btn {
+            background: var(--panel-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .timer-btn.active-run {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* Attribute Training Core System Layouts */
+        .points-bank {
+            font-size: 0.9rem;
+            color: #fff;
+            background: rgba(255,255,255,0.03);
+            padding: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .style-archetype-tag {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .stat-row {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .stat-flex-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .stat-name-block { display: flex; flex-direction: column; width: 65%; }
+        .stat-name { font-size: 1.05rem; letter-spacing: 0.5px; }
+        .stat-desc { font-size: 0.75rem; color: var(--accent-dim); line-height: 1.3; }
+        .stat-meta-controls { display: flex; align-items: center; gap: 12px; }
+        .stat-val { font-size: 1.25rem; color: var(--accent-blue); font-weight: bold; min-width: 25px; text-align: center; }
+        
+        .stat-progress-container {
+            width: 100%;
+            height: 5px;
+            background: #000;
+            border: 1px solid rgba(255,255,255,0.03);
+            margin-top: 6px;
+            position: relative;
+        }
+        .stat-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        .plus-btn {
+            background: var(--border-color);
+            color: #fff;
+            border: 1px solid var(--accent-blue);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .plus-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: var(--border-color); }
+
+        .refund-container { margin-top: 15px; text-align: center; }
+        .refund-btn {
+            background: transparent;
+            color: var(--accent-dim);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Weight Deck Panel Styles */
+        .weight-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .weight-input {
+            background: #000;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 12px;
+            font-size: 1.2rem;
+            width: 60%;
+            text-align: center;
+        }
+        .weight-submit-btn {
+            background: var(--border-color);
+            border: 1px solid var(--accent-blue);
+            color: #fff;
+            width: 40%;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .quick-weight-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .quick-w-btn {
+            background: var(--panel-color);
+            border: 1px solid var(--border-color);
+            color: var(--accent-blue);
+            padding: 10px 0;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Gym Rank Guide Section Layouts */
+        .syllabus-tier {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.25);
+        }
+        .syllabus-tier.current {
+            border-color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.04);
+            box-shadow: inset 4px 0 0 var(--accent-blue);
+        }
+        .tier-header { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1.15rem; 
+            margin-bottom: 6px; 
+            font-weight: bold; 
+            font-family: 'Squada One', sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .tier-status { font-size: 0.8rem; color: var(--accent-dim); font-family: 'Share Tech Mono', monospace; }
+        .syllabus-tier.current .tier-status { color: var(--accent-blue); }
+        .tier-reqs { font-size: 0.8rem; color: var(--accent-dim); padding-left: 10px; line-height: 1.4; border-left: 1px solid rgba(255,255,255,0.05); }
+
+        .deploy-btn {
+            width: 100%;
+            background: linear-gradient(180deg, #161f30, #0a0f18);
+            color: #fff;
+            border: 2px solid var(--accent-blue);
+            padding: 16px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        .deploy-btn.success {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .gatekeeper-screen {
+            display: none;
+            background: var(--panel-color);
+            border: 2px solid var(--accent-red);
+            padding: 22px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .gatekeeper-screen.active { display: block; }
     </style>
 </head>
 <body>
-    <p>Placeholder — replace with combat-core-improved.html content</p>
+
+    <!-- Full Screen Reward Splash Panel -->
+    <div class="level-up-overlay" id="levelUpSplash" onclick="dismissLevelUpSplash()">
+        <div class="level-up-box">
+            <div class="level-up-title">LEVEL UP!</div>
+            <p style="font-size: 1.1rem; color: #fff; margin-bottom: 15px; letter-spacing: 1px;">COMBAT STANDING INCREASED</p>
+            <p style="font-size: 0.9rem; color: var(--accent-green);">+3 ATTRIBUTE POINTS UNLOCKED</p>
+            <p style="font-size: 0.75rem; color: var(--accent-dim); margin-top: 25px;">[ TAP TO RETURN TO GYM ]</p>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-top-row">
+            <span class="username-display" id="userDisplay" onclick="changeUsername()">FIGHTER_01</span>
+            <button class="collapse-toggle-btn" onclick="toggleHeaderCollapse()" id="collapseBtn">▲</button>
+        </div>
+        
+        <!-- Collapsible Core Data Shell Container -->
+        <div class="header-collapsible-content" id="headerCollapsible">
+            <div class="rank-title-container">
+                <span class="rank-glove-emblem" id="gloveEmblem">🥊</span>
+                <span class="rank-title" id="rankDisplay">RECRUIT DIVISION</span>
+            </div>
+
+            <div class="level-display">FIGHTER LEVEL: <span id="levelDisplay" style="color:var(--accent-blue)">1</span></div>
+            
+            <div class="progress-label"><span>DAILY XP PROGRESS</span><span id="xpLabelText" style="color:var(--accent-blue)">0/100</span></div>
+            <div class="bar-container">
+                <div class="xp-bar" id="xpBar"></div>
+                <div class="bar-text" id="xpText">0%</div>
+            </div>
+
+            <div class="progress-label"><span>CAREER DIVISION PROGRESS</span><span id="rankLabelText" style="color:var(--accent-purple)">1 / 9 RANKS</span></div>
+            <div class="bar-container">
+                <div class="rank-bar" id="rankBar"></div>
+                <div class="bar-text" id="rankText">11%</div>
+            </div>
+
+            <div class="streak-fire">STREAK: <span id="streakDisplay">0</span> DAYS 🔥</div>
+        </div>
+    </header>
+
+    <div class="mutation-banner" id="mutationBanner">LOADING DAILY FOCUS TARGET MODIFIERS...</div>
+
+    <!-- Gym Navigation Deck Matrix Layout -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="tab-tasks" onclick="switchTab('tasks')">Daily Tasks</button>
+        <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">Fighter Stats</button>
+        <button class="tab-btn" id="tab-weight" onclick="switchTab('weight')">Weight Log</button>
+        <button class="tab-btn" id="tab-guide" onclick="switchTab('guide')">Rank Guide</button>
+    </div>
+
+    <!-- PAGE: DAILY TASKS (Formerly Matrix) -->
+    <div id="page-tasks" class="app-page active">
+        
+        <!-- AUTO-ADVANCING BOXING TIMER MODULE -->
+        <div class="timer-container">
+            <div class="timer-status-label" id="timerStatus">BOXING TIMER IDLE</div>
+            <div class="timer-display" id="timerTime">03:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="timerStartBtn" onclick="toggleTimer()">Start Round</button>
+                <button class="timer-btn" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+
+        <div class="gatekeeper-screen" id="gatekeeperPanel">
+            <h2 style="color:var(--accent-red); margin-bottom: 10px;">⚠️ SKILL TEST DETECTED</h2>
+            <p style="font-size:0.9rem; margin-bottom: 15px; color:var(--accent-dim);">You have reached your experience limit. You must perform and pass your division's physical test with a trainer to move forward.</p>
+            <button class="deploy-btn" style="border-color:var(--accent-green); color:var(--accent-green); margin-top:0;" onclick="passGatekeeper()">LOG TEST AS PASSED</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title-row">
+                <span class="panel-title">Active Training Plan</span>
+                <button class="utility-action-btn" onclick="selectAllTasks()">[ Select All ]</button>
+            </div>
+            
+            <!-- DYNAMIC TASK 1 -->
+            <div class="matrix-wrapper" id="wrapper-task1">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task1', 30)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task1')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task1">> Loading Plan...</span>
+                            <span class="matrix-reward" id="reward-task1">+30 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[✓]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task1">
+                    <div class="inspection-title" id="inspect-title-task1">Setup</div>
+                    <div id="inspect-body-task1">Loading details...</div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC TASK 2 -->
+            <div class="matrix-wrapper" id="wrapper-task2">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task2', 40)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task2')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task2">> Loading Plan...</span>
+                            <span class="matrix-reward" id="reward-task2">+40 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[✓]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task2">
+                    <div class="inspection-title" id="inspect-title-task2">Setup</div>
+                    <div id="inspect-body-task2">Loading details...</div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC TASK 3 -->
+            <div class="matrix-wrapper" id="wrapper-task3">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task3', 30)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task3')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task3">> Loading Plan...</span>
+                            <span class="matrix-reward" id="reward-task3">+30 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[✓]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task3">
+                    <div class="inspection-title" id="inspect-title-task3">Setup</div>
+                    <div id="inspect-body-task3">Loading details...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE: FIGHTER STATS (Formerly Chassis) -->
+    <div id="page-stats" class="app-page">
+        <div class="panel">
+            <div class="panel-title-row" style="border:none; margin-bottom:5px;">
+                <span class="panel-title">Fighter Attributes</span>
+            </div>
+            
+            <div class="style-archetype-tag" id="styleArchetypeDisplay">STYLE: BALANCE HYBRID</div>
+            
+            <div class="points-bank">AVAILABLE ATTRIBUTE POINTS: <span id="pointsDisplay">0</span></div>
+            
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block">
+                        <span class="stat-name">STRENGTH</span>
+                        <span class="stat-desc">Impact force, punch mechanics, body rotation power.</span>
+                    </div>
+                    <div class="stat-meta-controls">
+                        <span class="stat-val" id="val-str">10</span>
+                        <button class="plus-btn" id="btn-str" onclick="upgradeStat('str')">[+]</button>
+                    </div>
+                </div>
+                <div class="stat-progress-container">
+                    <div class="stat-progress-bar" id="pbar-str"></div>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block">
+                        <span class="stat-name">SPEED</span>
+                        <span class="stat-desc">Hand velocity, punch snap, fast muscle contractions.</span>
+                    </div>
+                    <div class="stat-meta-controls">
+                        <span class="stat-val" id="val-spd">10</span>
+                        <button class="plus-btn" id="btn-spd" onclick="upgradeStat('spd')">[+]</button>
+                    </div>
+                </div>
+                <div class="stat-progress-container">
+                    <div class="stat-progress-bar" id="pbar-spd"></div>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block">
+                        <span class="stat-name">STAMINA</span>
+                        <span class="stat-desc">Cardio health, multi-round pacing threshold.</span>
+                    </div>
+                    <div class="stat-meta-controls">
+                        <span class="stat-val" id="val-sta">10</span>
+                        <button class="plus-btn" id="btn-sta" onclick="upgradeStat('sta')">[+]</button>
+                    </div>
+                </div>
+                <div class="stat-progress-container">
+                    <div class="stat-progress-bar" id="pbar-sta"></div>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block">
+                        <span class="stat-name">TACTICS</span>
+                        <span class="stat-desc">Fakes, counter-punch timing, defense reflexes.</span>
+                    </div>
+                    <div class="stat-meta-controls">
+                        <span class="stat-val" id="val-tac">10</span>
+                        <button class="plus-btn" id="btn-tac" onclick="upgradeStat('tac')">[+]</button>
+                    </div>
+                </div>
+                <div class="stat-progress-container">
+                    <div class="stat-progress-bar" id="pbar-tac"></div>
+                </div>
+            </div>
+
+            <div class="refund-container">
+                <button class="refund-btn" onclick="reallocatePoints()">[ ↺ Reset & Reallocate Points ]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE: WEIGHT LOG -->
+    <div id="page-weight" class="app-page">
+        <div class="panel">
+            <div class="panel-title-row">
+                <span class="panel-title">Weight Tracking Deck</span>
+            </div>
+            <div class="weight-input-row">
+                <input type="number" step="0.1" class="weight-input" id="weightInputField" placeholder="0.0" onblur="forceIosKeyboardReset()">
+                <button class="weight-submit-btn" onclick="submitWeightEntry()">Log Weight</button>
+            </div>
+            
+            <!-- Tap-To-Add Quick Adjust Grid (No Keyboard Setup Required) -->
+            <div class="quick-weight-grid">
+                <button class="quick-w-btn" onclick="quickAdjustWeight(-5)">-5 LBS</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(-1)">-1 LB</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(1)">+1 LB</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(5)">+5 LBS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE: RANK GUIDE (Formerly Syllabus) -->
+    <div id="page-guide" class="app-page">
+        <div class="panel" id="syllabusContainer">
+            <div class="panel-title-row">
+                <span class="panel-title">Gym Progression Steps</span>
+            </div>
+            <!-- Dynamic Content Hook Structure -->
+        </div>
+    </div>
+
+    <!-- ==========================================
+        INTEGRATED LOGIC MOTOR JAVASCRIPT
+    ========================================== -->
+    <script>
+        // ==========================================
+        // 1. GLOBAL CORE ENGINE STATE
+        // ==========================================
+        let state = {
+            username: "FIGHTER_01",
+            level: 1,
+            xp: 0,
+            xpNeeded: 100,
+            careerRank: 1,
+            maxRanks: 9,
+            streak: 0,
+            pointsBank: 0,
+            activeTab: 'tasks',
+            isExamGateActive: false,
+            headerCollapsed: false,
+            currentWeightDisplay: 180.0,
+            
+            stats: { str: 10, spd: 10, sta: 10, tac: 10 },
+            baseStats: { str: 10, spd: 10, sta: 10, tac: 10 },
+            maxStatVal: 100,
+
+            // AUTO CONTINUOUS TIMER TRACKING MODULE STATE
+            timer: { 
+                workDuration: 180, 
+                restDuration: 60,
+                timeLeft: 180, 
+                instance: null, 
+                isRunning: false,
+                mode: 'WORK' // WORK or REST
+            },
+
+            tasks: {
+                'wrapper-task1': { completed: false, xp: 30, blueprint: 'Shadowboxing' },
+                'wrapper-task2': { completed: false, xp: 40, blueprint: 'Heavy Bag' },
+                'wrapper-task3': { completed: false, xp: 30, blueprint: 'Footwork' }
+            },
+
+            rankMissions: {
+                beginner: {
+                    task1: {
+                        name: "> [Rank 1-3 Basics] Shadowbox: Simple 1-2 Drilling",
+                        title: "[RECRUIT] Shadowboxing Form Foundation",
+                        body: "• <b>Objective:</b> Practice throwing straight punches safely.<br>• <b>Execution:</b> 3 rounds of shadowboxing. Only throw your left straight punch (Jab) followed by your right straight punch (Cross). Every single time you punch with one hand, glue the other hand directly to your cheekbone to protect your face."
+                    },
+                    task2: {
+                        name: "> [Rank 1-3 Basics] Bagwork: Heavy Bag Balance",
+                        title: "[RECRUIT] Punch Impact Basics",
+                        body: "• <b>Objective:</b> Hit hard without losing your balance.<br>• <b>Execution:</b> 3 rounds on the heavy bag. Don't worry about throwing long, fast combinations. Throw hard, single punches. Make sure both of your feet are glued flat to the floor the exact second your punch hits the bag."
+                    },
+                    task3: {
+                        name: "> [Rank 1-3 Basics] Footwork: Guard Up & Don't Trip",
+                        title: "[RECRUIT] Basic Foot Movement",
+                        body: "• <b>Objective:</b> Keep your balance so you don't get knocked over easily.<br>• <b>Execution:</b> 15 minutes. Move around. Step forward, backward, left, and right. <b>The Golden Rule:</b> Never let your feet touch or cross each other. Keep a wide, solid gap between your steps so you are always ready to move."
+                    }
+                },
+                intermediate: {
+                    task1: {
+                        name: "> [Rank 4-6 Medium] Shadowbox: Head & Body Shifts",
+                        title: "[CONTENDER] Changing Target Levels",
+                        body: "• <b>Objective:</b> Learn to strike the head and body in sequence.<br>• <b>Execution:</b> 3 rounds. Throw a head jab to blind the opponent, bend your knees to lower your weight, and throw a straight power cross directly into their stomach."
+                    },
+                    task2: {
+                        name: "> [Rank 4-6 Medium] Bagwork: Change the Rhythm",
+                        title: "[CONTENDER] Setting Up Heavy Hits",
+                        body: "• <b>Objective:</b> Mix light punch setups with hard finishers.<br>• <b>Execution:</b> 4 rounds. Tap the heavy bag lightly with double jabs to measure your range, then step in hard to explode with a heavy hook or cross."
+                    },
+                    task3: {
+                        name: "> [Rank 4-6 Medium] Footwork: Step to the Angle",
+                        title: "[CONTENDER] Stepping Off Center",
+                        body: "• <b>Objective:</b> Step off to the side to avoid pressure coming right at you.<br>• <b>Execution:</b> 15 minutes. Throw a punch combination, immediately step your front foot wide to the side, and spin your back foot 90 degrees to face a completely new angle."
+                    }
+                },
+                advanced: {
+                    task1: {
+                        name: "> [Rank 7-9 Elite] Shadowbox: Fake and Counter",
+                        title: "[MASTER] Baiting & Timing Interceptions",
+                        body: "• <b>Objective:</b> Trick your opponent into throwing a punch so you can hit them back.<br>• <b>Execution:</b> 4 rounds. Throw a half-fake jab to pull their guard away, quickly slip your upper body out of the way, and throw a counter uppercut."
+                    },
+                    task2: {
+                        name: "> [Rank 7-9 Elite] Bagwork: Close-Range Pressure",
+                        title: "[MASTER] Fighting Inside the Pocket",
+                        body: "• <b>Objective:</b> Fight right next to the target while staying protected.<br>• <b>Execution:</b> 4-5 rounds. Keep your forehead close to the bag, tuck both elbows tight into your ribs, and loop short, heavy hooks into the body."
+                    },
+                    task3: {
+                        name: "> [Rank 7-9 Elite] Footwork: Spring In and Out",
+                        title: "[MASTER] Elastic Range Shifts",
+                        body: "• <b>Objective:</b> Bounce smoothly in and out of hitting range like a spring.<br>• <b>Execution:</b> 20 minutes of bouncing steps. Spring forward into range to land a punch combo, and instantly bounce backward clear out of danger before the bag can touch you."
+                    }
+                }
+            }
+        };
+
+        // ==========================================
+        // 2. INITIALIZATION & LIFECYCLE
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", () => {
+            loadStateFromStorage();
+            applyNightModeBasedOnTime();
+            checkDailyReset();
+            checkStreakReset();
+            renderInterface();
+            generateDailyModifiers();
+        });
+
+        function todayString() {
+            return new Date().toDateString();
+        }
+
+        function checkDailyReset() {
+            const today = todayString();
+            if (state.lastResetDate && state.lastResetDate !== today) {
+                Object.keys(state.tasks).forEach(id => { state.tasks[id].completed = false; });
+                state.trainingLocked = false;
+                state.sessionLog = [];
+                state.lastResetDate = today;
+                saveStateToStorage();
+                const notice = document.getElementById("resetNotice");
+                if (notice) {
+                    notice.classList.add("active");
+                    setTimeout(() => notice.classList.remove("active"), 4000);
+                }
+            } else if (!state.lastResetDate) {
+                state.lastResetDate = today;
+                saveStateToStorage();
+            }
+        }
+
+        function checkStreakReset() {
+            const today = todayString();
+            if (state.lastStreakDate && state.lastStreakDate !== today) {
+                const diff = Math.round((new Date(today) - new Date(state.lastStreakDate)) / 86400000);
+                if (diff > 1) { state.streak = 0; saveStateToStorage(); }
+            }
+        }
+
+        function renderInterface() {
+            document.getElementById("userDisplay").innerText = state.username;
+            document.getElementById("levelDisplay").innerText = state.level;
+            document.getElementById("streakDisplay").innerText = state.streak;
+            document.getElementById("weightInputField").placeholder = state.currentWeightDisplay.toFixed(1);
+            
+            updateRankDisplayStrings();
+            updateExperienceProgressBars();
+            updateAttributeChassisBars();
+            evaluateGatekeeperCalculations();
+            buildDynamicMissionsByRank(); 
+            rebuildSyllabusTiers();        
+        }
+
+        // ==========================================
+        // 3. COLLAPSIBLE FOCUS DESIGN INTERFACE
+        // ==========================================
+        function toggleHeaderCollapse() {
+            const container = document.getElementById("headerCollapsible");
+            const btn = document.getElementById("collapseBtn");
+            state.headerCollapsed = !state.headerCollapsed;
+            
+            if (state.headerCollapsed) {
+                container.classList.add("collapsed");
+                btn.innerText = "▼";
+            } else {
+                container.classList.remove("collapsed");
+                btn.innerText = "▲";
+            }
+            saveStateToStorage();
+        }
+
+        // ==========================================
+        // 4. DYNAMIC MISSION INJECTOR MOTOR
+        // ==========================================
+        function buildDynamicMissionsByRank() {
+            let activeSet = state.rankMissions.beginner; 
+            
+            if (state.careerRank >= 4 && state.careerRank <= 6) {
+                activeSet = state.rankMissions.intermediate;
+            } else if (state.careerRank >= 7) {
+                activeSet = state.rankMissions.advanced;
+            }
+
+            document.getElementById("name-task1").innerText = activeSet.task1.name;
+            document.getElementById("inspect-title-task1").innerText = activeSet.task1.title;
+            document.getElementById("inspect-body-task1").innerHTML = activeSet.task1.body;
+
+            document.getElementById("name-task2").innerText = activeSet.task2.name;
+            document.getElementById("inspect-title-task2").innerText = activeSet.task2.title;
+            document.getElementById("inspect-body-task2").innerHTML = activeSet.task2.body;
+
+            document.getElementById("name-task3").innerText = activeSet.task3.name;
+            document.getElementById("inspect-title-task3").innerText = activeSet.task3.title;
+            document.getElementById("inspect-body-task3").innerHTML = activeSet.task3.body;
+            
+            // Clean dynamic interface checkbox state syncing
+            Object.keys(state.tasks).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (state.tasks[id].completed) {
+                        element.classList.add("checked");
+                    } else {
+                        element.classList.remove("checked");
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 5. NAVIGATION SWITCHES (No Shifts Layout)
+        // ==========================================
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if(activeBtn) activeBtn.classList.add("active");
+
+            document.querySelectorAll(".app-page").forEach(page => page.classList.remove("active"));
+            const activePage = document.getElementById(`page-${tabId}`);
+            if(activePage) activePage.classList.add("active");
+
+            forceIosKeyboardReset();
+        }
+
+        // ==========================================
+        // 6. ISOLATED SELECTION CHECKBOX LOGIC 
+        // ==========================================
+        function toggleTaskById(wrapperId, xpValue) {
+            // SHIELDS OUT ACCIDENTALLY TRIGGERED CLICKS FROM INFORMATION DESCRIPTIONS OR EXPANSIONS
+            if (window.event && (window.event.target.classList.contains('info-trigger-btn') || window.event.target.closest('.inspection-panel'))) {
+                return;
+            }
+
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+
+            if (state.tasks[wrapperId].completed) {
+                state.tasks[wrapperId].completed = false;
+                wrapper.classList.remove("checked");
+                adjustXPEngine(-xpValue);
+            } else {
+                state.tasks[wrapperId].completed = true;
+                wrapper.classList.add("checked");
+                adjustXPEngine(xpValue);
+            }
+            saveStateToStorage();
+        }
+
+        function selectAllTasks() {
+            Object.keys(state.tasks).forEach(id => {
+                if (!state.tasks[id].completed) {
+                    const wrapper = document.getElementById(id);
+                    if (wrapper) wrapper.classList.add("checked");
+                    state.tasks[id].completed = true;
+                    adjustXPEngine(state.tasks[id].xp);
+                }
+            });
+            saveStateToStorage();
+        }
+
+        function toggleInspection(inspectId) {
+            if (window.event) {
+                window.event.stopPropagation();
+                window.event.preventDefault();
+            }
+            const panel = document.getElementById(inspectId);
+            if (panel) {
+                panel.classList.toggle("active");
+            }
+        }
+
+        // ==========================================
+        // 7. AUTOMATED REWARDS LEVEL UP ENGINE
+        // ==========================================
+        function adjustXPEngine(amount) {
+            if(state.isExamGateActive && amount > 0) return;
+
+            state.xp += amount;
+
+            if (state.xp >= state.xpNeeded) {
+                while (state.xp >= state.xpNeeded) {
+                    state.xp -= state.xpNeeded;
+                    state.level++;
+                    state.pointsBank += 3;
+                    triggerFullCelebrationSplash();
+                }
+            } else if (state.xp < 0) {
+                state.xp = 0;
+            }
+
+            evaluateGatekeeperCalculations();
+            updateExperienceProgressBars();
+            updateAttributeChassisBars();
+            saveStateToStorage();
+        }
+
+        function triggerFullCelebrationSplash() {
+            document.getElementById("levelUpSplash").classList.add("active");
+        }
+
+        function dismissLevelUpSplash() {
+            document.getElementById("levelUpSplash").classList.remove("active");
+            renderInterface();
+        }
+
+        function updateExperienceProgressBars() {
+            const xpPercentage = Math.min(100, Math.floor((state.xp / state.xpNeeded) * 100));
+            document.getElementById("xpBar").style.width = `${xpPercentage}%`;
+            document.getElementById("xpText").innerText = `${xpPercentage}%`;
+            document.getElementById("xpLabelText").innerText = `${state.xp}/${state.xpNeeded}`;
+
+            const rankPercentage = Math.min(100, Math.floor((state.careerRank / state.maxRanks) * 100));
+            document.getElementById("rankBar").style.width = `${rankPercentage}%`;
+            document.getElementById("rankText").innerText = `${rankPercentage}%`;
+            document.getElementById("rankLabelText").innerText = `${state.careerRank} / ${state.maxRanks} RANKS`;
+        }
+
+        function updateRankDisplayStrings() {
+            const rankTitles = [
+                "RECRUIT DIVISION", "NOVICE STRIKER", "AMATEUR CONTENDER", 
+                "REGIONAL FIGHTER", "APEX AGGRESSOR", "CHAMPIONSHIP LINE", 
+                "ELITE TECHNICIAN", "MASTER STRIKER", "GRAND FIGHT LEGEND"
+            ];
+            const rankIndex = Math.min(state.careerRank - 1, rankTitles.length - 1);
+            
+            const titleElement = document.getElementById("rankDisplay");
+            titleElement.innerText = rankTitles[rankIndex];
+
+            const emblemElement = document.getElementById("gloveEmblem");
+            if (state.careerRank <= 3) {
+                titleElement.style.color = "var(--accent-blue)";
+                emblemElement.style.color = "var(--accent-blue)";
+            } else if (state.careerRank >= 4 && state.careerRank <= 6) {
+                titleElement.style.color = "var(--accent-purple)";
+                emblemElement.style.color = "var(--accent-purple)";
+            } else {
+                titleElement.style.color = "var(--accent-gold)";
+                emblemElement.style.color = "var(--accent-gold)";
+            }
+        }
+
+        function evaluateGatekeeperCalculations() {
+            if ((state.level === 5 || state.level === 10) && state.xp >= 90) {
+                state.isExamGateActive = true;
+                document.getElementById("gatekeeperPanel").classList.add("active");
+            } else {
+                state.isExamGateActive = false;
+                document.getElementById("gatekeeperPanel").classList.remove("active");
+            }
+        }
+
+        function passGatekeeper() {
+            if(state.careerRank < state.maxRanks) {
+                state.careerRank++;
+                state.level++; 
+                state.xp = 0;
+                state.isExamGateActive = false;
+                document.getElementById("gatekeeperPanel").classList.remove("active");
+                renderInterface();
+                saveStateToStorage();
+            }
+        }
+
+        // ==========================================
+        // 8. FIGHTER ATTRIBUTE STAT SYSTEM
+        // ==========================================
+        function upgradeStat(statKey) {
+            if (state.pointsBank > 0 && state.stats[statKey] < state.maxStatVal) {
+                state.stats[statKey]++;
+                state.pointsBank--;
+                updateAttributeChassisBars();
+                saveStateToStorage();
+            }
+        }
+
+        function reallocatePoints() {
+            let pointsToRefund = 0;
+            Object.keys(state.stats).forEach(key => {
+                pointsToRefund += (state.stats[key] - state.baseStats[key]);
+                state.stats[key] = state.baseStats[key];
+            });
+
+            state.pointsBank += pointsToRefund;
+            updateAttributeChassisBars();
+            saveStateToStorage();
+        }
+
+        function updateAttributeChassisBars() {
+            document.getElementById("pointsDisplay").innerText = state.pointsBank;
+            
+            Object.keys(state.stats).forEach(key => {
+                const valEl = document.getElementById(`val-${key}`);
+                const barEl = document.getElementById(`pbar-${key}`);
+                const plusBtn = document.getElementById(`btn-${key}`);
+                
+                if (valEl) valEl.innerText = state.stats[key];
+                if (barEl) {
+                    const percentage = Math.min(100, Math.floor((state.stats[key] / state.maxStatVal) * 100));
+                    barEl.style.width = `${percentage}%`;
+                }
+                if (plusBtn) {
+                    plusBtn.disabled = (state.pointsBank <= 0 || state.stats[key] >= state.maxStatVal);
+                }
+            });
+
+            evaluateDynamicCombatStyle();
+        }
+
+        function evaluateDynamicCombatStyle() {
+            const { str, spd, sta, tac } = state.stats;
+            let archetype = "BALANCE HYBRID";
+
+            if(str > spd && str > sta && str > tac) archetype = "POWER SLUGGER";
+            else if(spd > str && spd > sta && spd > tac) archetype = "SPEED OUT-BOXER";
+            else if(sta > str && spd > sta && str > tac) archetype = "PRESSURE GRINDER";
+            else if(tac > str && tac > spd && tac > sta) archetype = "TECHNICAL INTERCEPTOR";
+
+            const archDisplay = document.getElementById("styleArchetypeDisplay");
+            if(archDisplay) archDisplay.innerText = `STYLE TYPE: ${archetype}`;
+        }
+
+        // ==========================================
+        // 9. CONTINUOUS AUTO-ADVANCING BOXING TIMER
+        // ==========================================
+        function toggleTimer() {
+            const btn = document.getElementById("timerStartBtn");
+            const statusLabel = document.getElementById("timerStatus");
+            
+            if (state.timer.isRunning) {
+                clearInterval(state.timer.instance);
+                state.timer.isRunning = false;
+                btn.innerText = "Resume Round";
+                btn.classList.remove("active-run");
+                statusLabel.innerText = `${state.timer.mode} PAUSED`;
+            } else {
+                state.timer.isRunning = true;
+                btn.innerText = "Pause Round";
+                btn.classList.add("active-run");
+                statusLabel.innerText = state.timer.mode === 'WORK' ? "ROUND LIVE - WORK HARD" : "RESTING - ACTIVE RECOVERY";
+                
+                state.timer.instance = setInterval(() => {
+                    state.timer.timeLeft--;
+                    renderTimerLayoutDisplay();
+
+                    if (state.timer.timeLeft <= 0) {
+                        cycleTimerNextMode();
+                    }
+                }, 1000);
+            }
+        }
+
+        function cycleTimerNextMode() {
+            const timerDisplay = document.getElementById("timerTime");
+            const statusLabel = document.getElementById("timerStatus");
+
+            if (state.timer.mode === 'WORK') {
+                // MOVE AUTOMATICALLY INTO RECOVERY BREAK
+                state.timer.mode = 'REST';
+                state.timer.timeLeft = state.timer.restDuration;
+                statusLabel.innerText = "RESTING - ACTIVE RECOVERY";
+                timerDisplay.classList.add("visual-flash");
+                
+                // Advance career training streak metric safely 
+                state.streak++;
+                document.getElementById("streakDisplay").innerText = state.streak;
+                saveStateToStorage();
+            } else {
+                // BREAK IS OVER, TRIGGER NEXT FIGHT WORKING SEGMENT
+                state.timer.mode = 'WORK';
+                state.timer.timeLeft = state.timer.workDuration;
+                statusLabel.innerText = "ROUND LIVE - WORK HARD";
+                timerDisplay.classList.remove("visual-flash");
+            }
+            renderTimerLayoutDisplay();
+        }
+
+        function resetTimer() {
+            clearInterval(state.timer.instance);
+            state.timer.isRunning = false;
+            state.timer.mode = 'WORK';
+            state.timer.timeLeft = state.timer.workDuration;
+            
+            const btn = document.getElementById("timerStartBtn");
+            btn.innerText = "Start Round";
+            btn.classList.remove("active-run");
+            
+            const timerDisplay = document.getElementById("timerTime");
+            timerDisplay.classList.remove("visual-flash");
+            
+            document.getElementById("timerStatus").innerText = "BOXING TIMER IDLE";
+            renderTimerLayoutDisplay();
+        }
+
+        function renderTimerLayoutDisplay() {
+            const mins = Math.floor(state.timer.timeLeft / 60);
+            const secs = state.timer.timeLeft % 60;
+            document.getElementById("timerTime").innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ==========================================
+        // 10. PREMIUM WEIGHT MANAGEMENT GRID SYSTEM
+        // ==========================================
+        function submitWeightEntry() {
+            const input = document.getElementById("weightInputField");
+            if(input && input.value.trim() !== "") {
+                const parsedValue = parseFloat(input.value);
+                if (!isNaN(parsedValue) && parsedValue > 0) {
+                    state.currentWeightDisplay = parsedValue;
+                    input.placeholder = state.currentWeightDisplay.toFixed(1);
+                    const d = new Date();
+                    const iso = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+                    state.weightHistory.unshift({ date: iso, weight: parsedValue });
+                    if (state.weightHistory.length > 30) state.weightHistory = state.weightHistory.slice(0, 30);
+                    renderWeightHistory();
+                }
+                input.value = "";
+                forceIosKeyboardReset();
+                saveStateToStorage();
+            }
+        }
+
+        function quickAdjustWeight(deltaAmount) {
+            state.currentWeightDisplay = Math.max(0, state.currentWeightDisplay + deltaAmount);
+            document.getElementById("weightInputField").placeholder = state.currentWeightDisplay.toFixed(1);
+            const d = new Date();
+            const iso = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+            state.weightHistory.unshift({ date: iso, weight: state.currentWeightDisplay });
+            if (state.weightHistory.length > 30) state.weightHistory = state.weightHistory.slice(0, 30);
+            renderWeightHistory();
+            saveStateToStorage();
+        }
+
+        // ==========================================
+        // 11. EXTRA UTILITIES & PROGRESS GUIDES
+        // ==========================================
+        function rebuildSyllabusTiers() {
+            const container = document.getElementById("syllabusContainer");
+            if (!container) return;
+
+            container.innerHTML = '<div class="panel-title-row"><span class="panel-title">Gym Progression Steps</span></div>';
+
+            const levels = [
+                { id: 1, name: "STAGE I: RECRUIT PLATFORM", activeRange: "Ranks 1 - 3", cond: state.careerRank <= 3, desc: "Master basic punch geometry (straight lines), stable stances, and avoiding crossed steps while moving." },
+                { id: 2, name: "STAGE II: CONTENDER CIRCUITS", activeRange: "Ranks 4 - 6", cond: (state.careerRank >= 4 && state.careerRank <= 6), desc: "Learn head-to-body target shifting, 90-degree lateral angle pivot steps, and variable rhythm punch speeds." },
+                { id: 3, name: "STAGE III: CHAMPIONSHIP CORE", activeRange: "Ranks 7 - 9", cond: state.careerRank >= 7, desc: "Advanced fake/bait loops, working inside close phone-booth distances safely, and elastic spring foot movements." }
+            ];
+
+            levels.forEach(lvl => {
+                const div = document.createElement("div");
+                div.className = `syllabus-tier ${lvl.cond ? 'current' : ''}`;
+                div.innerHTML = `
+                    <div class="tier-header">
+                        <span>${lvl.name}</span>
+                        <span class="tier-status">${lvl.cond ? '[YOUR ACTIVE GOAL]' : '[STANDBY]'}</span>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--accent-blue); margin-bottom:4px;">${lvl.activeRange}</p>
+                    <div class="tier-reqs">${lvl.desc}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function seededRandom(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+            return Math.abs(h) / 2147483647;
+        }
+
+        function generateDailyModifiers() {
+            const modifiers = [
+                "⚡ FOCUS DAY: Extra round speed attributes tracking with high multiplier value.",
+                "🪐 ENDURANCE BLOCK: Pacing focus target loaded.",
+                "🛡️ COUNTER DAY: Slip setups and block timing are high priority."
+            ];
+            document.getElementById("mutationBanner").innerText = modifiers[Math.floor(seededRandom(new Date().toDateString()) * modifiers.length)];
+        }
+
+        function changeUsername() {
+            const currentName = state.username;
+            const targetName = prompt("CHANGE CALLSIGN NAME:", currentName);
+            if(targetName && targetName.trim() !== "") {
+                state.username = targetName.trim().toUpperCase();
+                document.getElementById("userDisplay").innerText = state.username;
+                saveStateToStorage();
+            }
+        }
+
+        function applyNightModeBasedOnTime() {
+            const currentHour = new Date().getHours();
+            if (currentHour >= 20 || currentHour < 6) {
+                document.body.classList.add("night-mode");
+            }
+        }
+
+        // iOS Keyboard Shield Defense Mechanism
+        function forceIosKeyboardReset() {
+            window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+        }
+
+        // ==========================================
+        // 12. PERSISTENCE ENGINE LOCAL DATA STORAGE
+        // ==========================================
+        function saveStateToStorage() {
+            const structuralPackage = {
+                username: state.username,
+                level: state.level,
+                xp: state.xp,
+                careerRank: state.careerRank,
+                streak: state.streak,
+                lastStreakDate: state.lastStreakDate,
+                pointsBank: state.pointsBank,
+                stats: state.stats,
+                headerCollapsed: state.headerCollapsed,
+                currentWeightDisplay: state.currentWeightDisplay,
+                weightHistory: state.weightHistory,
+                tasks: state.tasks,
+                lastResetDate: state.lastResetDate,
+                isExamGateActive: state.isExamGateActive,
+                trainingLocked: state.trainingLocked,
+                sessionLog: state.sessionLog
+            };
+            try {
+                localStorage.setItem("combatCore_v6_save", JSON.stringify(structuralPackage));
+            } catch(e) { /* storage unavailable — in-memory state still intact */ }
+        }
+
+        function loadStateFromStorage() {
+            const packageString = localStorage.getItem("combatCore_v6_save");
+            if (!packageString) return;
+            try {
+                const externalPackage = JSON.parse(packageString);
+                if (externalPackage) {
+                    state.username = externalPackage.username || state.username;
+                    state.level = externalPackage.level || state.level;
+                    state.xp = externalPackage.xp || state.xp;
+                    state.careerRank = externalPackage.careerRank || state.careerRank;
+                    state.streak = externalPackage.streak || state.streak;
+                    state.pointsBank = externalPackage.pointsBank || state.pointsBank;
+                    state.stats = externalPackage.stats || state.stats;
+                    state.headerCollapsed = externalPackage.headerCollapsed || false;
+                    state.currentWeightDisplay = externalPackage.currentWeightDisplay || state.currentWeightDisplay;
+                    state.tasks = externalPackage.tasks || state.tasks;
+                    state.lastResetDate = externalPackage.lastResetDate || null;
+                    state.lastStreakDate = externalPackage.lastStreakDate || null;
+                    state.isExamGateActive = externalPackage.isExamGateActive || false;
+                    state.trainingLocked = externalPackage.trainingLocked || false;
+                    state.sessionLog = externalPackage.sessionLog || [];
+                    state.weightHistory = externalPackage.weightHistory || [];
+
+                    // Sync the visual collapsed state if it was stored
+                    if (state.headerCollapsed) {
+                        document.getElementById("headerCollapsible").classList.add("collapsed");
+                        document.getElementById("collapseBtn").innerText = "▼";
+                    }
+                }
+            } catch (e) {
+                // Silent fail protection safe backup execution
+            }
+        }
+    </script>
 </body>
 </html>
