@@ -608,7 +608,7 @@ function updateExperienceProgressBars() {
     document.getElementById("xpBar").style.width = `${xpPct}%`;
     document.getElementById("xpText").innerText = `${xpPct}%`;
     document.getElementById("xpLabelText").innerText = `${state.xp}/${CONFIG.XP_PER_LEVEL}`;
-    const rankPct = Math.min(100, Math.floor((state.careerRank / CONFIG.MAX_RANKS) * 100));
+    const rankPct = Math.min(100, Math.floor(((state.careerRank - 1) / CONFIG.MAX_RANKS) * 100));
     document.getElementById("rankBar").style.width = `${rankPct}%`;
     document.getElementById("rankText").innerText = `${rankPct}%`;
     document.getElementById("rankLabelText").innerText = `${state.careerRank} / ${CONFIG.MAX_RANKS} RANKS`;
