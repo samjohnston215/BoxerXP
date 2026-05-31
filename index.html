@@ -1,1 +1,1464 @@
-WILL_BE_REPLACED_TEMPLATE
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Combat Core">
+    <title>COMBAT CORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Squada+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080a0f;
+            --panel-color: #111520;
+            --border-color: #1e2638;
+            --text-color: #e2e8f0;
+            --accent-blue: #87ceeb;
+            --accent-purple: #a855f7;
+            --accent-gold: #fbbf24;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-dim: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
+        body {
+            padding: 10px 15px calc(env(safe-area-inset-bottom, 0px) + 20px) 15px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.night-mode {
+            --bg-color: #030406;
+            --panel-color: #090b10;
+            --border-color: #141923;
+            --text-color: #718096;
+            --accent-blue: #4a90a4;
+            --accent-purple: #6b4fa8;
+            --accent-gold: #a08030;
+            --accent-green: #2d7a50;
+            --accent-red: #742a2a;
+        }
+
+        .level-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(8, 10, 15, 0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+        .level-up-overlay.active { display: flex; }
+        .level-up-box {
+            border: 3px solid var(--accent-blue);
+            background: var(--panel-color);
+            padding: 40px 20px;
+            box-shadow: 0 0 50px rgba(135, 206, 235, 0.3);
+            max-width: 90%; width: 340px;
+        }
+        .level-up-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 3.5rem;
+            color: var(--accent-blue);
+            line-height: 1;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            animation: textPulse 0.6s ease infinite alternate;
+        }
+        @keyframes textPulse {
+            from { transform: scale(0.98); text-shadow: 0 0 5px rgba(135,206,235,0.2); }
+            to { transform: scale(1.02); text-shadow: 0 0 20px rgba(135,206,235,0.6); }
+        }
+
+        .rank-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(4,5,8,0.97);
+            z-index: 10000;
+            align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; padding: 30px;
+        }
+        .rank-up-overlay.active { display: flex; }
+        .rank-up-icon { font-size: 4rem; margin-bottom: 14px; }
+        .rank-up-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 2.2rem; letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .rank-up-line { font-size: 0.95rem; color: var(--accent-dim); max-width: 320px; line-height: 1.5; margin-bottom: 20px; }
+        .rank-up-num { font-size: 0.85rem; color: var(--accent-dim); margin-bottom: 24px; }
+
+        canvas#confettiCanvas {
+            position: fixed; top: 0; left: 0;
+            pointer-events: none; z-index: 99999; display: none;
+        }
+
+        header {
+            background: rgba(17, 21, 32, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            position: sticky; top: 10px; z-index: 100;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .header-top-row {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 6px; position: relative;
+        }
+        .username-display {
+            font-size: 1.15rem; color: #fff; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer;
+            border-bottom: 1px dashed var(--accent-dim); padding: 2px 6px;
+        }
+        .collapse-toggle-btn {
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--accent-dim); width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; cursor: pointer;
+        }
+        .header-collapsible-content {
+            max-height: 500px; overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .header-collapsible-content.collapsed { max-height: 0px; }
+        .rank-title-container {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-bottom: 3px; margin-top: 5px;
+        }
+        .rank-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.9rem; letter-spacing: 1.5px; text-transform: uppercase;
+        }
+        .rank-glove-emblem { font-size: 1.6rem; display: inline-block; transition: color 0.3s ease; }
+        .level-display { font-size: 1.1rem; margin-bottom: 12px; color: var(--accent-dim); }
+        .progress-label {
+            font-size: 0.8rem; text-align: left; color: var(--accent-dim);
+            margin-top: 10px; margin-bottom: 4px;
+            display: flex; justify-content: space-between;
+        }
+        .bar-container {
+            width: 100%; background: #000;
+            border: 1px solid var(--border-color); height: 18px; position: relative;
+        }
+        .xp-bar {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, #3a86c8, var(--accent-blue));
+            transition: width 0.3s ease;
+        }
+        .rank-bar {
+            width: 11%; height: 100%;
+            background: linear-gradient(90deg, #6b21a8, var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+        .bar-text {
+            position: absolute; width: 100%; text-align: center;
+            font-size: 0.8rem; line-height: 18px; top: 0; left: 0;
+            color: #fff; text-shadow: 1px 1px 2px #000;
+        }
+        .streak-fire { color: var(--accent-red); font-size: 1.15rem; margin-top: 14px; }
+        .mutation-banner {
+            background: rgba(135, 206, 235, 0.08);
+            border: 1px solid var(--accent-blue);
+            padding: 8px; text-align: center; font-size: 0.85rem;
+            margin-bottom: 15px; color: #fff; letter-spacing: 0.5px;
+        }
+        .nav-tabs {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 5px; margin-bottom: 15px;
+        }
+        .tab-btn {
+            background: var(--panel-color); color: var(--accent-dim);
+            border: 1px solid var(--border-color);
+            padding: 12px 0; font-size: 0.85rem;
+            cursor: pointer; text-transform: uppercase;
+        }
+        .tab-btn.active {
+            color: #fff; background: var(--border-color);
+            border-color: var(--accent-blue);
+        }
+        .app-page { display: none; }
+        .app-page.active { display: block; }
+        .panel {
+            background: var(--panel-color);
+            border: 2px solid var(--border-color);
+            padding: 16px; margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .panel-title-row {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 14px;
+            border-bottom: 1px dashed var(--border-color); padding-bottom: 6px;
+        }
+        .panel-title {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.4rem; color: var(--accent-blue);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .utility-action-btn {
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--accent-dim); padding: 4px 10px;
+            font-size: 0.75rem; text-transform: uppercase; cursor: pointer;
+        }
+        .matrix-wrapper { margin-bottom: 10px; }
+        .matrix-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,0.25); border: 1px solid var(--border-color);
+            padding: 14px; border-radius: 4px; cursor: pointer;
+        }
+        .matrix-wrapper.completed .matrix-item {
+            border-color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.04);
+        }
+        .matrix-wrapper.locked .matrix-item { opacity: 0.55; cursor: not-allowed; }
+        .matrix-info { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+        .info-trigger-btn {
+            background: var(--border-color); color: var(--accent-blue);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 24px; height: 24px; display: flex;
+            align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 0.8rem; font-weight: bold; z-index: 5;
+        }
+        .matrix-text-block { display: flex; flex-direction: column; }
+        .matrix-name { font-size: 1.05rem; }
+        .matrix-reward { font-size: 0.8rem; color: var(--accent-green); margin-top: 2px; }
+        .checkbox-custom {
+            width: 28px; height: 28px; border: 2px solid var(--accent-dim);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem; color: transparent;
+        }
+        .matrix-wrapper.completed .checkbox-custom {
+            border-color: var(--accent-blue); color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.1);
+        }
+        .inspection-panel {
+            display: none; background: #090a0d;
+            border: 1px dashed var(--border-color); border-top: none;
+            padding: 12px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.4;
+        }
+        .inspection-panel.open { display: block; }
+        .inspection-title {
+            color: var(--accent-blue); font-size: 0.75rem;
+            text-transform: uppercase; margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px;
+        }
+        .training-locked-banner {
+            display: none; background: rgba(74,222,128,0.08);
+            border: 1px solid var(--accent-green);
+            padding: 10px; text-align: center;
+            color: var(--accent-green); font-size: 0.9rem;
+            margin-bottom: 12px; letter-spacing: 0.5px;
+        }
+        .training-locked-banner.active { display: block; }
+        .lock-training-btn {
+            width: 100%; background: rgba(74,222,128,0.06);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green); padding: 12px;
+            font-size: 0.9rem; cursor: pointer; text-transform: uppercase;
+            margin-top: 8px; display: none;
+        }
+        .confirm-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85); z-index: 9000;
+            align-items: center; justify-content: center;
+        }
+        .confirm-overlay.active { display: flex; }
+        .confirm-box {
+            background: var(--panel-color); border: 2px solid var(--accent-green);
+            padding: 28px; max-width: 340px; width: 90%; text-align: center;
+        }
+        .timer-container {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
+            padding: 12px; margin-bottom: 15px; text-align: center;
+        }
+        .timer-status-label {
+            font-size: 0.8rem; color: var(--accent-dim);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
+        }
+        .timer-display {
+            font-size: 2.5rem; color: #fff; margin-bottom: 8px;
+            font-weight: bold; letter-spacing: 1px;
+        }
+        .timer-display.visual-flash { animation: textFlash 0.5s ease infinite alternate; }
+        @keyframes textFlash {
+            from { color: #fff; text-shadow: 0 0 0 transparent; }
+            to { color: var(--accent-red); text-shadow: 0 0 10px var(--accent-red); }
+        }
+        .timer-controls { display: flex; justify-content: center; gap: 10px; }
+        .timer-btn {
+            background: var(--panel-color); border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 6px 16px;
+            font-size: 0.85rem; cursor: pointer; text-transform: uppercase;
+        }
+        .timer-btn.active-run { border-color: var(--accent-red); color: var(--accent-red); }
+        .radar-wrapper { text-align: center; margin: 12px 0; }
+        .points-bank {
+            font-size: 0.9rem; color: #fff;
+            background: rgba(255,255,255,0.03);
+            padding: 8px; text-align: center;
+            border: 1px solid var(--border-color); margin-bottom: 12px; letter-spacing: 0.5px;
+        }
+        .style-archetype-tag {
+            font-family: 'Squada One', sans-serif;
+            font-size: 1.5rem; color: var(--accent-blue);
+            text-align: center; margin-bottom: 14px; letter-spacing: 1px;
+            text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 6px;
+        }
+        .stat-row { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .stat-flex-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 4px;
+        }
+        .stat-name-block { display: flex; flex-direction: column; width: 65%; }
+        .stat-name { font-size: 1.05rem; letter-spacing: 0.5px; }
+        .stat-desc { font-size: 0.75rem; color: var(--accent-dim); line-height: 1.3; }
+        .stat-meta-controls { display: flex; align-items: center; gap: 12px; }
+        .stat-val { font-size: 1.25rem; color: var(--accent-blue); font-weight: bold; min-width: 25px; text-align: center; }
+        .stat-progress-container {
+            width: 100%; height: 5px; background: #000;
+            border: 1px solid rgba(255,255,255,0.03); margin-top: 6px; position: relative;
+        }
+        .stat-progress-bar { width: 0%; height: 100%; background: var(--accent-blue); transition: width 0.3s ease; }
+        .plus-btn {
+            background: var(--border-color); color: #fff;
+            border: 1px solid var(--accent-blue);
+            width: 28px; height: 28px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1rem; cursor: pointer;
+        }
+        .plus-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: var(--border-color); }
+        .refund-container { margin-top: 15px; text-align: center; }
+        .refund-btn {
+            background: transparent; color: var(--accent-dim);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px; font-size: 0.8rem; cursor: pointer; text-transform: uppercase;
+        }
+        .weight-input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .weight-input {
+            background: #000; border: 1px solid var(--border-color);
+            color: #fff; padding: 12px; font-size: 1.2rem;
+            width: 60%; text-align: center;
+        }
+        .weight-submit-btn {
+            background: var(--border-color); border: 1px solid var(--accent-blue);
+            color: #fff; width: 40%; font-size: 0.85rem;
+            text-transform: uppercase; cursor: pointer;
+        }
+        .quick-weight-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 8px; margin-top: 5px;
+        }
+        .quick-w-btn {
+            background: var(--panel-color); border: 1px solid var(--border-color);
+            color: var(--accent-blue); padding: 10px 0;
+            font-size: 0.95rem; cursor: pointer; font-weight: bold;
+        }
+        .weight-history-entry {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.85rem;
+        }
+        .wh-date { color: var(--accent-dim); }
+        .wh-val { color: var(--accent-blue); font-weight: bold; }
+        .weight-empty { color: var(--accent-dim); font-size: 0.85rem; padding: 12px 0; text-align: center; }
+        .session-log-entry {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.82rem;
+        }
+        .log-time { color: var(--accent-dim); font-size: 0.75rem; min-width: 45px; }
+        .log-name { flex: 1; padding: 0 8px; color: var(--text-color); }
+        .log-xp { color: var(--accent-green); font-weight: bold; }
+        .syllabus-tier {
+            border: 1px solid var(--border-color); padding: 12px;
+            margin-bottom: 10px; background: rgba(0,0,0,0.25);
+        }
+        .syllabus-tier.current {
+            border-color: var(--accent-blue);
+            background: rgba(135, 206, 235, 0.04);
+            box-shadow: inset 4px 0 0 var(--accent-blue);
+        }
+        .tier-header {
+            display: flex; justify-content: space-between;
+            font-size: 1.15rem; margin-bottom: 6px; font-weight: bold;
+            font-family: 'Squada One', sans-serif; letter-spacing: 0.5px;
+        }
+        .tier-status { font-size: 0.8rem; color: var(--accent-dim); font-family: 'Share Tech Mono', monospace; }
+        .syllabus-tier.current .tier-status { color: var(--accent-blue); }
+        .tier-reqs { font-size: 0.8rem; color: var(--accent-dim); padding-left: 10px; line-height: 1.4; border-left: 1px solid rgba(255,255,255,0.05); }
+        .gatekeeper-screen {
+            display: none; background: var(--panel-color);
+            border: 2px solid var(--accent-red);
+            padding: 22px; text-align: center; margin-bottom: 15px;
+        }
+        .gatekeeper-screen.active { display: block; }
+        .deploy-btn {
+            width: 100%;
+            background: linear-gradient(180deg, #161f30, #0a0f18);
+            color: #fff; border: 2px solid var(--accent-blue);
+            padding: 16px; font-size: 1.1rem; cursor: pointer;
+            text-transform: uppercase; margin-top: 10px;
+        }
+        .achievement-entry {
+            padding: 8px; border: 1px solid var(--border-color);
+            margin-bottom: 6px; font-size: 0.85rem;
+            background: rgba(255,255,255,0.02);
+        }
+        .save-data-area {
+            display: none; width: 100%; background: #000;
+            border: 1px solid var(--border-color); color: var(--accent-green);
+            padding: 10px; font-size: 0.75rem;
+            height: 160px; margin-top: 10px; resize: none;
+        }
+        .save-data-area.active { display: block; }
+        .reset-notice {
+            display: none; background: rgba(135,206,235,0.1);
+            border: 1px solid var(--accent-blue);
+            padding: 10px; text-align: center; color: var(--accent-blue);
+            font-size: 0.85rem; margin-bottom: 12px;
+        }
+        .reset-notice.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Level Up Splash -->
+    <div class="level-up-overlay" id="levelUpSplash" onclick="dismissLevelUpSplash()">
+        <div class="level-up-box">
+            <div class="level-up-title">LEVEL UP!</div>
+            <p style="font-size:1.1rem;color:#fff;margin-bottom:15px;letter-spacing:1px;">COMBAT STANDING INCREASED</p>
+            <p style="font-size:0.9rem;color:var(--accent-green);">+3 ATTRIBUTE POINTS UNLOCKED</p>
+            <p style="font-size:0.75rem;color:var(--accent-dim);margin-top:25px;">[ TAP TO RETURN TO GYM ]</p>
+        </div>
+    </div>
+
+    <!-- Rank Up Cutscene -->
+    <div class="rank-up-overlay" id="rankUpOverlay" onclick="dismissRankUpCutscene()">
+        <div class="rank-up-icon" id="rankUpIcon">🥊</div>
+        <div class="rank-up-title" id="rankUpTitle">RANK UP</div>
+        <div class="rank-up-line" id="rankUpLine"></div>
+        <div class="rank-up-num" id="rankUpNum"></div>
+        <p style="font-size:0.75rem;color:var(--accent-dim);">[ TAP TO CONTINUE ]</p>
+    </div>
+
+    <!-- Confirm Lock Training Overlay -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <p style="font-size:1rem;color:var(--accent-green);margin-bottom:14px;">LOCK IN TODAY'S SESSION?</p>
+            <p style="font-size:0.8rem;color:var(--accent-dim);margin-bottom:16px;">Stat gains will be applied:</p>
+            <div id="confirmStatPreview" style="margin-bottom:18px;font-size:0.85rem;"></div>
+            <button class="deploy-btn" style="border-color:var(--accent-green);color:var(--accent-green);margin-top:0;" onclick="confirmLockTraining()">CONFIRM &amp; LOCK</button>
+            <button class="utility-action-btn" style="margin-top:10px;width:100%;" onclick="cancelLockTraining()">[ Cancel ]</button>
+        </div>
+    </div>
+
+    <div class="reset-notice" id="resetNotice">&#9193; NEW DAY — TASKS RESET. LET'S GO.</div>
+
+    <header>
+        <div class="header-top-row">
+            <span class="username-display" id="userDisplay" onclick="changeUsername()">FIGHTER_01</span>
+            <button class="collapse-toggle-btn" onclick="toggleHeaderCollapse()" id="collapseBtn">&#9650;</button>
+        </div>
+        <div class="header-collapsible-content" id="headerCollapsible">
+            <div class="rank-title-container">
+                <span class="rank-glove-emblem" id="gloveEmblem">🥊</span>
+                <span class="rank-title" id="rankDisplay">RECRUIT DIVISION</span>
+            </div>
+            <div class="level-display">FIGHTER LEVEL: <span id="levelDisplay" style="color:var(--accent-blue)">1</span></div>
+            <div class="progress-label"><span>DAILY XP PROGRESS</span><span id="xpLabelText" style="color:var(--accent-blue)">0/100</span></div>
+            <div class="bar-container">
+                <div class="xp-bar" id="xpBar"></div>
+                <div class="bar-text" id="xpText">0%</div>
+            </div>
+            <div class="progress-label"><span>CAREER DIVISION PROGRESS</span><span id="rankLabelText" style="color:var(--accent-purple)">1 / 9 RANKS</span></div>
+            <div class="bar-container">
+                <div class="rank-bar" id="rankBar"></div>
+                <div class="bar-text" id="rankText">11%</div>
+            </div>
+            <div class="streak-fire">STREAK: <span id="streakDisplay">0</span> DAYS 🔥</div>
+        </div>
+    </header>
+
+    <div class="mutation-banner" id="mutationBanner">LOADING DAILY MODIFIERS...</div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="tab-tasks" onclick="switchTab('tasks')">Daily Tasks</button>
+        <button class="tab-btn" id="tab-stats" onclick="switchTab('stats')">Fighter Stats</button>
+        <button class="tab-btn" id="tab-weight" onclick="switchTab('weight')">Weight Log</button>
+        <button class="tab-btn" id="tab-guide" onclick="switchTab('guide')">Rank Guide</button>
+    </div>
+
+    <!-- PAGE: DAILY TASKS -->
+    <div id="page-tasks" class="app-page active">
+        <div class="timer-container">
+            <div class="timer-status-label" id="timerStatus">BOXING TIMER IDLE</div>
+            <div class="timer-display" id="timerTime">03:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="timerStartBtn" onclick="toggleTimer()">Start Round</button>
+                <button class="timer-btn" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+
+        <div class="gatekeeper-screen" id="gatekeeperPanel">
+            <h2 style="color:var(--accent-red);margin-bottom:10px;">&#9888;&#65039; SKILL TEST DETECTED</h2>
+            <p style="font-size:0.9rem;margin-bottom:15px;color:var(--accent-dim);">You have reached your experience limit. Pass your division's physical test with a trainer to advance.</p>
+            <button class="deploy-btn" style="border-color:var(--accent-green);color:var(--accent-green);margin-top:0;" onclick="passGatekeeper()">LOG TEST AS PASSED</button>
+        </div>
+
+        <div class="training-locked-banner" id="trainingLockedBanner">&#9989; SESSION LOCKED IN — STATS UPDATED</div>
+
+        <div class="panel">
+            <div class="panel-title-row">
+                <span class="panel-title">Active Training Plan</span>
+                <button class="utility-action-btn" onclick="selectAllTasks()">[ Select All ]</button>
+            </div>
+
+            <div class="matrix-wrapper" id="wrapper-task1">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task1', 30)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task1')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task1">&gt; Loading...</span>
+                            <span class="matrix-reward" id="reward-task1">+30 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[&#10003;]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task1">
+                    <div class="inspection-title" id="inspect-title-task1">Setup</div>
+                    <div id="inspect-body-task1">Loading...</div>
+                </div>
+            </div>
+
+            <div class="matrix-wrapper" id="wrapper-task2">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task2', 40)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task2')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task2">&gt; Loading...</span>
+                            <span class="matrix-reward" id="reward-task2">+40 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[&#10003;]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task2">
+                    <div class="inspection-title" id="inspect-title-task2">Setup</div>
+                    <div id="inspect-body-task2">Loading...</div>
+                </div>
+            </div>
+
+            <div class="matrix-wrapper" id="wrapper-task3">
+                <div class="matrix-item" onclick="toggleTaskById('wrapper-task3', 30)">
+                    <div class="matrix-info">
+                        <div class="info-trigger-btn" onclick="toggleInspection('inspect-task3')">?</div>
+                        <div class="matrix-text-block">
+                            <span class="matrix-name" id="name-task3">&gt; Loading...</span>
+                            <span class="matrix-reward" id="reward-task3">+30 XP</span>
+                        </div>
+                    </div>
+                    <div class="checkbox-custom">[&#10003;]</div>
+                </div>
+                <div class="inspection-panel" id="inspect-task3">
+                    <div class="inspection-title" id="inspect-title-task3">Setup</div>
+                    <div id="inspect-body-task3">Loading...</div>
+                </div>
+            </div>
+
+            <button class="lock-training-btn" id="lockTrainingBtn" onclick="promptLockTraining()">&#128274; LOCK IN SESSION &amp; APPLY STAT GAINS</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title-row">
+                <span class="panel-title">Session Log</span>
+                <span id="sessionXpTotal" style="font-size:0.8rem;color:var(--accent-green);"></span>
+            </div>
+            <div id="sessionLogEntries"><span style="color:var(--accent-dim);font-size:0.78rem;">No tasks completed yet.</span></div>
+        </div>
+    </div>
+
+    <!-- PAGE: FIGHTER STATS -->
+    <div id="page-stats" class="app-page">
+        <div class="panel">
+            <div class="panel-title-row" style="border:none;margin-bottom:5px;">
+                <span class="panel-title">Fighter Attributes</span>
+            </div>
+            <div class="style-archetype-tag" id="styleArchetypeDisplay">STYLE: BALANCE HYBRID</div>
+            <div class="radar-wrapper">
+                <canvas id="radarCanvas" width="220" height="220"></canvas>
+            </div>
+            <div class="points-bank">AVAILABLE ATTRIBUTE POINTS: <span id="pointsDisplay">0</span></div>
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block"><span class="stat-name">STRENGTH</span><span class="stat-desc">Impact force, punch mechanics, body rotation power.</span></div>
+                    <div class="stat-meta-controls"><span class="stat-val" id="val-str">10</span><button class="plus-btn" id="btn-str" onclick="upgradeStat('str')">[+]</button></div>
+                </div>
+                <div class="stat-progress-container"><div class="stat-progress-bar" id="pbar-str"></div></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block"><span class="stat-name">SPEED</span><span class="stat-desc">Hand velocity, punch snap, fast muscle contractions.</span></div>
+                    <div class="stat-meta-controls"><span class="stat-val" id="val-spd">10</span><button class="plus-btn" id="btn-spd" onclick="upgradeStat('spd')">[+]</button></div>
+                </div>
+                <div class="stat-progress-container"><div class="stat-progress-bar" id="pbar-spd"></div></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block"><span class="stat-name">STAMINA</span><span class="stat-desc">Cardio health, multi-round pacing threshold.</span></div>
+                    <div class="stat-meta-controls"><span class="stat-val" id="val-sta">10</span><button class="plus-btn" id="btn-sta" onclick="upgradeStat('sta')">[+]</button></div>
+                </div>
+                <div class="stat-progress-container"><div class="stat-progress-bar" id="pbar-sta"></div></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-flex-header">
+                    <div class="stat-name-block"><span class="stat-name">TACTICS</span><span class="stat-desc">Fakes, counter-punch timing, defense reflexes.</span></div>
+                    <div class="stat-meta-controls"><span class="stat-val" id="val-tac">10</span><button class="plus-btn" id="btn-tac" onclick="upgradeStat('tac')">[+]</button></div>
+                </div>
+                <div class="stat-progress-container"><div class="stat-progress-bar" id="pbar-tac"></div></div>
+            </div>
+            <div class="refund-container">
+                <button class="refund-btn" onclick="reallocatePoints()">[ &#8634; Reset &amp; Reallocate Points ]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE: WEIGHT LOG -->
+    <div id="page-weight" class="app-page">
+        <div class="panel">
+            <div class="panel-title-row"><span class="panel-title">Weight Tracking Deck</span></div>
+            <div class="weight-input-row">
+                <input type="number" step="0.1" class="weight-input" id="weightInputField" placeholder="0.0" onblur="forceIosKeyboardReset()">
+                <button class="weight-submit-btn" onclick="submitWeightEntry()">Log Weight</button>
+            </div>
+            <div class="quick-weight-grid">
+                <button class="quick-w-btn" onclick="quickAdjustWeight(-5)">-5 LBS</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(-1)">-1 LB</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(1)">+1 LB</button>
+                <button class="quick-w-btn" onclick="quickAdjustWeight(5)">+5 LBS</button>
+            </div>
+            <div id="weightHistoryList" style="margin-top:14px;"></div>
+        </div>
+    </div>
+
+    <!-- PAGE: RANK GUIDE -->
+    <div id="page-guide" class="app-page">
+        <div class="panel" id="syllabusContainer">
+            <div class="panel-title-row"><span class="panel-title">Gym Progression Steps</span></div>
+        </div>
+        <div class="panel">
+            <div class="panel-title-row"><span class="panel-title">Save Data</span></div>
+            <button class="utility-action-btn" style="width:100%;margin-bottom:6px;" onclick="exportSaveData()">[ Export Save ]</button>
+            <button class="utility-action-btn" style="width:100%;margin-bottom:6px;" onclick="showImportArea()">[ Import Save ]</button>
+            <textarea class="save-data-area" id="saveDataArea" placeholder="Paste exported save JSON here..."></textarea>
+            <button class="utility-action-btn" id="importConfirmBtn" style="width:100%;display:none;" onclick="importSaveData()">[ Confirm Import ]</button>
+        </div>
+    </div>
+
+    <script>
+    // === src/config.js ===
+const CONFIG = {
+    SAVE_KEY: 'combatCore_v6_save',
+    MAX_RANKS: 9,
+    STAT_MAX: 100,
+    MAX_WEIGHT_HISTORY: 30,
+    GATEKEEPER_XP_PERCENT: 0.9,
+    POINTS_PER_LEVEL: 3,
+    TASK_STAT_MAP: {
+        'Shadowboxing': 'spd',
+        'Heavy Bag': 'str',
+        'Footwork': 'sta',
+        'Jab Drill': 'spd',
+        'Cross Drill': 'str',
+        'Defense Drill': 'tac',
+        'Conditioning': 'sta',
+        'Combination Work': 'tac',
+        'Pad Work': 'spd',
+        'Sparring': 'tac'
+    }
+};
+
+function xpRequired(level) {
+    return Math.floor(100 * Math.pow(1.15, level - 1));
+}
+
+function nextRankGateLevel() {
+    const gates = { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25, 6: 30, 7: 35, 8: 40 };
+    return gates[state.careerRank] || null;
+}
+
+function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function seededRandom(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+    return Math.abs(h) / 2147483647;
+}
+
+function playTone(freq, duration) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(); osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+}
+
+let state = {
+    username: 'FIGHTER_01',
+    level: 1, xp: 0, careerRank: 1,
+    streak: 0, lastStreakDate: null,
+    pointsBank: 0,
+    headerCollapsed: false,
+    isExamGateActive: false,
+    trainingLocked: false,
+    tutorialDone: false,
+    totalSessions: 0,
+    currentWeightDisplay: 180.0,
+    weightHistory: [],
+    sessionLog: [],
+    lastResetDate: null,
+    achievements: [],
+    stats: { str: 10, spd: 10, sta: 10, tac: 10 },
+    tasks: {
+        'wrapper-task1': { completed: false, xp: 30, blueprint: 'Shadowboxing' },
+        'wrapper-task2': { completed: false, xp: 40, blueprint: 'Heavy Bag' },
+        'wrapper-task3': { completed: false, xp: 30, blueprint: 'Footwork' }
+    },
+    timer: { workDuration: 180, restDuration: 60, timeLeft: 180, instance: null, isRunning: false, mode: 'WORK' }
+};
+    // === src/storage.js ===
+function buildSavePayload() {
+    return {
+        username: state.username, level: state.level, xp: state.xp, careerRank: state.careerRank,
+        streak: state.streak, lastStreakDate: state.lastStreakDate, pointsBank: state.pointsBank,
+        stats: state.stats, headerCollapsed: state.headerCollapsed,
+        currentWeightDisplay: state.currentWeightDisplay, weightHistory: state.weightHistory,
+        tasks: state.tasks, lastResetDate: state.lastResetDate,
+        isExamGateActive: state.isExamGateActive, trainingLocked: state.trainingLocked,
+        tutorialDone: state.tutorialDone, achievements: state.achievements, totalSessions: state.totalSessions
+    };
+}
+
+function saveStateToStorage() {
+    try { localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(buildSavePayload())); } catch(e) {}
+}
+
+function applyLoadedPackage(pkg) {
+    if (!pkg) return;
+    state.username             = pkg.username             || state.username;
+    state.level                = pkg.level                || state.level;
+    state.xp                   = pkg.xp                   ?? state.xp;
+    state.careerRank           = pkg.careerRank           || state.careerRank;
+    state.streak               = pkg.streak               ?? state.streak;
+    state.lastStreakDate       = pkg.lastStreakDate        || null;
+    state.pointsBank           = pkg.pointsBank           ?? state.pointsBank;
+    state.stats                = pkg.stats                || state.stats;
+    state.headerCollapsed      = pkg.headerCollapsed      || false;
+    state.currentWeightDisplay = pkg.currentWeightDisplay || state.currentWeightDisplay;
+    state.weightHistory        = pkg.weightHistory        || [];
+    state.tasks                = pkg.tasks                || state.tasks;
+    state.lastResetDate        = pkg.lastResetDate        || null;
+    state.isExamGateActive     = pkg.isExamGateActive     || false;
+    state.trainingLocked       = pkg.trainingLocked       || false;
+    state.tutorialDone         = pkg.tutorialDone         || false;
+    state.achievements         = pkg.achievements         || [];
+    state.totalSessions        = pkg.totalSessions        ?? 0;
+    if (state.headerCollapsed) {
+        const hc = document.getElementById("headerCollapsible");
+        const cb = document.getElementById("collapseBtn");
+        if (hc) hc.classList.add("collapsed");
+        if (cb) cb.innerText = "\u25BC";
+    }
+}
+
+function loadStateFromStorage() {
+    try { const raw = localStorage.getItem(CONFIG.SAVE_KEY); if (!raw) return; applyLoadedPackage(JSON.parse(raw)); } catch(e) {}
+}
+
+function exportSaveData() {
+    const json = JSON.stringify(buildSavePayload(), null, 2);
+    const area = document.getElementById("saveDataArea");
+    area.value = json; area.classList.add("active"); area.select();
+    document.getElementById("importConfirmBtn").style.display = "none";
+}
+
+function showImportArea() {
+    const area = document.getElementById("saveDataArea");
+    area.value = ""; area.classList.add("active");
+    area.placeholder = "Paste exported save JSON here then tap Import...";
+    document.getElementById("importConfirmBtn").style.display = "block";
+}
+
+function importSaveData() {
+    try {
+        const parsed = JSON.parse(document.getElementById("saveDataArea").value);
+        applyLoadedPackage(parsed); renderInterface();
+        document.getElementById("saveDataArea").classList.remove("active");
+        document.getElementById("importConfirmBtn").style.display = "none";
+        saveStateToStorage();
+    } catch(e) { alert("Invalid save data. Please check and try again."); }
+}
+
+    // === src/ui.js ===
+function renderInterface() {
+    document.getElementById('userDisplay').innerText = state.username;
+    document.getElementById('levelDisplay').innerText = state.level;
+    document.getElementById('streakDisplay').innerText = state.streak;
+    const wif = document.getElementById('weightInputField');
+    if (wif) wif.placeholder = state.currentWeightDisplay.toFixed(1);
+    const pd = document.getElementById('pointsDisplay');
+    if (pd) pd.innerText = state.pointsBank;
+    updateRankDisplayStrings();
+    updateExperienceProgressBars();
+    updateAttributeChassisBars();
+    evaluateGatekeeperCalculations();
+    buildDynamicMissionsByRank();
+    rebuildSyllabusTiers();
+    renderWeightHistory();
+    renderSessionLog();
+    applyLockedTrainingState();
+    checkLockButtonVisibility();
+}
+
+function updateExperienceProgressBars() {
+    const needed = xpRequired(state.level);
+    const xpPct = Math.min(100, Math.floor((state.xp / needed) * 100));
+    document.getElementById('xpBar').style.width = xpPct + '%';
+    document.getElementById('xpText').innerText = xpPct + '%';
+    document.getElementById('xpLabelText').innerText = state.xp + '/' + needed;
+    const rankPct = Math.min(100, Math.floor((state.careerRank / CONFIG.MAX_RANKS) * 100));
+    document.getElementById('rankBar').style.width = rankPct + '%';
+    document.getElementById('rankText').innerText = rankPct + '%';
+    document.getElementById('rankLabelText').innerText = state.careerRank + ' / ' + CONFIG.MAX_RANKS + ' RANKS';
+}
+
+function updateRankDisplayStrings() {
+    const rankTitles = [
+        'RECRUIT DIVISION','NOVICE STRIKER','AMATEUR CONTENDER',
+        'REGIONAL FIGHTER','APEX AGGRESSOR','CHAMPIONSHIP LINE',
+        'ELITE TECHNICIAN','MASTER STRIKER','GRAND FIGHT LEGEND'
+    ];
+    const idx = Math.min(state.careerRank - 1, rankTitles.length - 1);
+    const titleEl = document.getElementById('rankDisplay');
+    const emblemEl = document.getElementById('gloveEmblem');
+    if (titleEl) titleEl.innerText = rankTitles[idx];
+    const col = state.careerRank <= 3 ? 'var(--accent-blue)' : state.careerRank <= 6 ? 'var(--accent-purple)' : 'var(--accent-gold)';
+    if (titleEl) titleEl.style.color = col;
+    if (emblemEl) emblemEl.style.color = col;
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('tab-' + tabId);
+    if (btn) btn.classList.add('active');
+    document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById('page-' + tabId);
+    if (page) page.classList.add('active');
+    forceIosKeyboardReset();
+}
+
+function toggleHeaderCollapse() {
+    const container = document.getElementById('headerCollapsible');
+    const btn = document.getElementById('collapseBtn');
+    state.headerCollapsed = !state.headerCollapsed;
+    container.classList.toggle('collapsed', state.headerCollapsed);
+    btn.innerText = state.headerCollapsed ? '\u25BC' : '\u25B2';
+    saveStateToStorage();
+}
+
+function changeUsername() {
+    const newName = prompt('CHANGE CALLSIGN NAME:', state.username);
+    if (newName && newName.trim()) {
+        state.username = newName.trim().toUpperCase();
+        document.getElementById('userDisplay').innerText = state.username;
+        saveStateToStorage();
+    }
+}
+
+function applyNightModeBasedOnTime() {
+    const h = new Date().getHours();
+    if (h >= 20 || h < 6) document.body.classList.add('night-mode');
+}
+
+function forceIosKeyboardReset() {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+}
+
+function generateDailyModifiers() {
+    const modifiers = [
+        '\u26A1 FOCUS DAY: Speed attribute tracking active.',
+        '\uD83E\uDE90 ENDURANCE BLOCK: Pacing focus target loaded.',
+        '\uD83D\uDEE1\uFE0F COUNTER DAY: Defense timing is high priority.'
+    ];
+    const idx = Math.floor(seededRandom(new Date().toDateString()) * modifiers.length);
+    const el = document.getElementById('mutationBanner');
+    if (el) el.innerText = modifiers[idx];
+}
+
+function rebuildSyllabusTiers() {
+    const container = document.getElementById('syllabusContainer');
+    if (!container) return;
+    container.innerHTML = '<div class="panel-title-row"><span class="panel-title">Gym Progression Steps</span></div>';
+    const levels = [
+        { name: 'STAGE I: RECRUIT PLATFORM', range: 'Ranks 1-3', active: state.careerRank <= 3, desc: 'Master basic punch geometry, stable stances, and footwork fundamentals.' },
+        { name: 'STAGE II: CONTENDER CIRCUITS', range: 'Ranks 4-6', active: state.careerRank >= 4 && state.careerRank <= 6, desc: 'Head-to-body target shifts, 90-degree pivot steps, variable rhythm.' },
+        { name: 'STAGE III: CHAMPIONSHIP CORE', range: 'Ranks 7-9', active: state.careerRank >= 7, desc: 'Advanced fakes, inside-distance fighting, elastic spring footwork.' }
+    ];
+    levels.forEach(function(lvl) {
+        const div = document.createElement('div');
+        div.className = 'syllabus-tier' + (lvl.active ? ' current' : '');
+        div.innerHTML = '<div class="tier-header"><span>' + lvl.name + '</span><span class="tier-status">' + (lvl.active ? '[YOUR ACTIVE GOAL]' : '[STANDBY]') + '</span></div>' +
+            '<p style="font-size:0.8rem;color:var(--accent-blue);margin-bottom:4px;">' + lvl.range + '</p>' +
+            '<div class="tier-reqs">' + lvl.desc + '</div>';
+        container.appendChild(div);
+    });
+}
+
+function upgradeStat(key) {
+    if (state.pointsBank > 0 && state.stats[key] < CONFIG.STAT_MAX) {
+        state.stats[key]++; state.pointsBank--;
+        updateAttributeChassisBars(); saveStateToStorage();
+    }
+}
+
+function reallocatePoints() {
+    const base = { str: 10, spd: 10, sta: 10, tac: 10 };
+    Object.keys(state.stats).forEach(function(k) {
+        state.pointsBank += state.stats[k] - base[k];
+        state.stats[k] = base[k];
+    });
+    updateAttributeChassisBars(); saveStateToStorage();
+}
+
+function checkAndUnlockAchievements() {}
+
+function todayTheme() { return 'default'; }
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStateFromStorage();
+    applyNightModeBasedOnTime();
+    checkDailyReset();
+    checkStreakReset();
+    renderInterface();
+    generateDailyModifiers();
+});
+    // === src/tasks.js ===
+function toggleTaskById(wrapperId, xpVal) {
+    if (state.trainingLocked) return;
+    const wrapper = document.getElementById(wrapperId);
+    if (!wrapper) return;
+    const task = state.tasks[wrapperId];
+    if (!task) return;
+    const wasComplete = task.completed;
+    task.completed = !wasComplete;
+    wrapper.classList.toggle("completed", task.completed);
+    if (task.completed) {
+        adjustXPEngine(xpVal);
+        const nameEl = document.getElementById(`name-${wrapperId.replace('wrapper-', '')}`);
+        addSessionLogEntry(nameEl ? nameEl.innerText : wrapperId, xpVal);
+    } else {
+        adjustXPEngine(-xpVal);
+        removeSessionLogEntry(wrapperId);
+    }
+    saveStateToStorage();
+    checkLockButtonVisibility();
+}
+
+function selectAllTasks() {
+    if (state.trainingLocked) return;
+    Object.keys(state.tasks).forEach(id => {
+        if (!state.tasks[id].completed) {
+            const wrapper = document.getElementById(id);
+            const rewardEl = document.getElementById(`reward-${id.replace('wrapper-', '')}`);
+            const xp = rewardEl ? parseInt(rewardEl.innerText.replace(/\D/g,'')) : 30;
+            state.tasks[id].completed = true;
+            if (wrapper) wrapper.classList.add("completed");
+            adjustXPEngine(xp);
+            const nameEl = document.getElementById(`name-${id.replace('wrapper-','')}`); 
+            addSessionLogEntry(nameEl ? nameEl.innerText : id, xp);
+        }
+    });
+    saveStateToStorage();
+    checkLockButtonVisibility();
+}
+
+function deselectAllTasks() {
+    if (state.trainingLocked) return;
+    Object.keys(state.tasks).forEach(id => {
+        if (state.tasks[id].completed) {
+            const wrapper = document.getElementById(id);
+            const rewardEl = document.getElementById(`reward-${id.replace('wrapper-', '')}`);
+            const xp = rewardEl ? parseInt(rewardEl.innerText.replace(/\D/g,'')) : 30;
+            state.tasks[id].completed = false;
+            if (wrapper) wrapper.classList.remove("completed");
+            adjustXPEngine(-xp);
+            removeSessionLogEntry(id);
+        }
+    });
+    saveStateToStorage();
+    checkLockButtonVisibility();
+}
+
+function checkLockButtonVisibility() {
+    const allDone = Object.values(state.tasks).every(t => t.completed);
+    const btn = document.getElementById("lockTrainingBtn");
+    if (btn) btn.style.display = allDone && !state.trainingLocked ? "block" : "none";
+}
+
+function promptLockTraining() {
+    if (state.trainingLocked) return;
+    const statNames = { str: "STRENGTH", spd: "SPEED", sta: "STAMINA", tac: "TACTICS" };
+    const lines = Object.keys(state.tasks).map(id => {
+        const key = CONFIG.TASK_STAT_MAP[state.tasks[id].blueprint] || 'tac';
+        return `<div><span style="color:var(--accent-dim)">${state.tasks[id].blueprint}:</span> <span style="color:var(--accent-green);font-weight:bold;">+1 ${statNames[key]}</span></div>`;
+    });
+    document.getElementById("confirmStatPreview").innerHTML = lines.join('');
+    document.getElementById("confirmOverlay").classList.add("active");
+}
+
+function confirmLockTraining() {
+    document.getElementById("confirmOverlay").classList.remove("active");
+    state.trainingLocked = true;
+    Object.keys(state.tasks).forEach(id => {
+        const key = CONFIG.TASK_STAT_MAP[state.tasks[id].blueprint] || 'tac';
+        if (state.stats[key] < CONFIG.STAT_MAX) state.stats[key]++;
+        document.getElementById(id)?.classList.add("locked");
+    });
+    document.getElementById("trainingLockedBanner").classList.add("active");
+    state.totalSessions = (state.totalSessions || 0) + 1;
+    updateAttributeChassisBars();
+    saveStateToStorage();
+    checkAndUnlockAchievements();
+}
+
+function cancelLockTraining() {
+    document.getElementById("confirmOverlay").classList.remove("active");
+}
+
+function applyLockedTrainingState() {
+    if (!state.trainingLocked) return;
+    Object.keys(state.tasks).forEach(id => document.getElementById(id)?.classList.add("locked"));
+    document.getElementById("trainingLockedBanner").classList.add("active");
+}
+
+function addSessionLogEntry(name, xp) {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!state.sessionLog) state.sessionLog = [];
+    state.sessionLog.push({ name, xp, time: timeStr });
+    renderSessionLog();
+}
+
+function removeSessionLogEntry(wrapperId) {
+    if (!state.sessionLog) return;
+    state.sessionLog = state.sessionLog.filter(e => !e.name.includes(wrapperId));
+    renderSessionLog();
+}
+
+function renderSessionLog() {
+    const container = document.getElementById("sessionLogEntries");
+    const totalEl = document.getElementById("sessionXpTotal");
+    if (!container) return;
+    if (!state.sessionLog || state.sessionLog.length === 0) {
+        container.innerHTML = '<span style="color:var(--accent-dim); font-size:0.78rem;">No tasks completed yet.</span>';
+        if (totalEl) totalEl.innerText = '';
+        return;
+    }
+    container.innerHTML = state.sessionLog.map(e =>
+        `<div class="session-log-entry"><span class="log-time">${e.time}</span><span class="log-name">${e.name}</span><span class="log-xp">+${e.xp} XP</span></div>`
+    ).join('');
+    const total = state.sessionLog.reduce((s, e) => s + e.xp, 0);
+    if (totalEl) totalEl.innerText = `SESSION TOTAL: +${total} XP`;
+}
+
+function toggleInspection(panelId) {
+    event.stopPropagation();
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const isOpen = panel.classList.contains("open");
+    document.querySelectorAll(".inspection-panel.open").forEach(p => p.classList.remove("open"));
+    if (!isOpen) panel.classList.add("open");
+}
+
+function buildDynamicMissionsByRank() {
+    const tier = getMissionTier(state.careerRank);
+    const theme = todayTheme();
+    const missions = state.rankMissions?.[theme]?.[tier];
+    if (!missions) return;
+
+    const taskIds = ['wrapper-task1', 'wrapper-task2', 'wrapper-task3'];
+    const missionKeys = ['task1', 'task2', 'task3'];
+
+    taskIds.forEach((wid, i) => {
+        const key = missionKeys[i];
+        const m = missions[key];
+        if (!m) return;
+        const shortId = wid.replace('wrapper-', '');
+        const nameEl = document.getElementById(`name-${shortId}`);
+        const titleEl = document.getElementById(`inspect-title-${shortId}`);
+        const bodyEl = document.getElementById(`inspect-body-${shortId}`);
+        if (nameEl) nameEl.innerText = m.name;
+        if (titleEl) titleEl.innerText = m.title;
+        if (bodyEl) bodyEl.innerHTML = m.body;
+        if (state.tasks[wid]) state.tasks[wid].blueprint = m.blueprint;
+    });
+
+    checkLockButtonVisibility();
+    renderSessionLog();
+}
+
+function getMissionTier(rank) {
+    if (rank <= 3) return 'beginner';
+    if (rank <= 6) return 'intermediate';
+    return 'advanced';
+}
+
+    // === src/xp.js ===
+function adjustXPEngine(amount) {
+    if (state.isExamGateActive && amount > 0) return;
+    state.xp += amount;
+    const needed = xpRequired(state.level);
+    while (state.xp >= needed) {
+        state.xp -= needed;
+        state.level++;
+        triggerFullCelebrationSplash();
+        const newNeeded = xpRequired(state.level);
+        if (state.xp >= newNeeded) continue;
+        break;
+    }
+    if (state.xp < 0) state.xp = 0;
+    evaluateGatekeeperCalculations();
+    updateExperienceProgressBars();
+    checkAndUnlockAchievements();
+    saveStateToStorage();
+}
+
+function triggerFullCelebrationSplash() {
+    document.getElementById("levelUpSplash").classList.add("active");
+    playTone(880, 0.15);
+    confettiBurst();
+}
+
+function dismissLevelUpSplash() {
+    document.getElementById("levelUpSplash").classList.remove("active");
+    renderInterface();
+}
+
+// ─── RANK PROMOTION CUTSCENE ─────────────────────────────────────────────────
+function passGatekeeper() {
+    if (state.careerRank < CONFIG.MAX_RANKS) state.careerRank++;
+    state.level++; state.xp = 0; state.isExamGateActive = false;
+    document.getElementById("gatekeeperPanel").classList.remove("active");
+    saveStateToStorage();
+    showRankPromotionCutscene(state.careerRank);
+}
+
+const RANK_PROMO_DATA = [
+    null,
+    { title:"RECRUIT DIVISION",     color:"var(--accent-blue)",   line:"Your journey begins. Guard up \u2014 this gym will forge you.", icon:"🥊" },
+    { title:"NOVICE STRIKER",        color:"var(--accent-blue)",   line:"You've learned the basics. Now it's time to build habits.", icon:"🥊" },
+    { title:"AMATEUR CONTENDER",     color:"var(--accent-blue)",   line:"Fundamentals locked in. Combinations are your next weapon.", icon:"🏅" },
+    { title:"REGIONAL FIGHTER",      color:"var(--accent-purple)", line:"You're dangerous. Local fighters take you seriously now.", icon:"🏅" },
+    { title:"APEX AGGRESSOR",        color:"var(--accent-purple)", line:"Power and precision combined. Elite territory ahead.", icon:"🏅" },
+    { title:"CHAMPIONSHIP LINE",     color:"var(--accent-purple)", line:"You fight like a champion. The belt is within reach.", icon:"🏆" },
+    { title:"ELITE TECHNICIAN",      color:"var(--accent-gold)",   line:"Pure mastery. Every movement has a purpose.", icon:"⭐" },
+    { title:"MASTER STRIKER",        color:"var(--accent-gold)",   line:"Few fighters reach this level. You are one of them.", icon:"⭐" },
+    { title:"GRAND FIGHT LEGEND",    color:"var(--accent-gold)",   line:"The pinnacle. Your name is in the record books.", icon:"👑" },
+];
+
+function showRankPromotionCutscene(newRank) {
+    const data = RANK_PROMO_DATA[Math.min(newRank, RANK_PROMO_DATA.length - 1)];
+    if (!data) { renderInterface(); return; }
+    const overlay = document.getElementById("rankUpOverlay");
+    document.getElementById("rankUpIcon").textContent = data.icon;
+    document.getElementById("rankUpTitle").textContent = data.title;
+    document.getElementById("rankUpTitle").style.color = data.color;
+    document.getElementById("rankUpLine").textContent = data.line;
+    document.getElementById("rankUpNum").textContent = `RANK ${newRank} / ${CONFIG.MAX_RANKS}`;
+    overlay.classList.add("active");
+    playTone(523, 0.1);
+    setTimeout(() => playTone(659, 0.1), 180);
+    setTimeout(() => playTone(784, 0.1), 360);
+    setTimeout(() => playTone(1047, 0.18), 540);
+    confettiBurst();
+}
+
+function dismissRankUpCutscene() {
+    document.getElementById("rankUpOverlay").classList.remove("active");
+    renderInterface();
+    checkAndUnlockAchievements();
+}
+
+// ─── CONFETTI BURST ────────────────────────────────────────────────────────────────
+function confettiBurst() {
+    const canvas = document.getElementById("confettiCanvas");
+    if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.display = "block";
+    const ctx = canvas.getContext("2d");
+    const colors = ["#e74c3c","#3498db","#f1c40f","#2ecc71","#9b59b6","#e67e22","#1abc9c"];
+    const particles = Array.from({length: 90}, () => ({
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 200,
+        vx: (Math.random() - 0.5) * 5,
+        vy: 3 + Math.random() * 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 6 + Math.random() * 6,
+        rot: Math.random() * 360,
+        rotV: (Math.random() - 0.5) * 8
+    }));
+    let frame = 0;
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot * Math.PI / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, 1 - frame / 80);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size / 2);
+            ctx.restore();
+            p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+        });
+        frame++;
+        if (frame < 90) requestAnimationFrame(draw);
+        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+    }
+    draw();
+}
+
+function evaluateGatekeeperCalculations() {
+    const gateLevel = nextRankGateLevel();
+    if (!gateLevel) { state.isExamGateActive = false; document.getElementById("gatekeeperPanel").classList.remove("active"); return; }
+    const needed = xpRequired(state.level);
+    const threshold = Math.floor(needed * CONFIG.GATEKEEPER_XP_PERCENT);
+    const isGate = state.level === gateLevel && state.xp >= threshold;
+    state.isExamGateActive = isGate;
+    document.getElementById("gatekeeperPanel").classList.toggle("active", isGate);
+}
+
+function updateAttributeChassisBars() {
+    Object.keys(state.stats).forEach(k => {
+        const valEl = document.getElementById(`val-${k}`);
+        const barEl = document.getElementById(`pbar-${k}`);
+        if (valEl) valEl.innerText = state.stats[k];
+        if (barEl) barEl.style.width = `${Math.min(100, Math.floor((state.stats[k] / CONFIG.STAT_MAX) * 100))}%`;
+    });
+    evaluateDynamicCombatStyle();
+    renderRadarChart();
+}
+
+function evaluateDynamicCombatStyle() {
+    const { str, spd, sta, tac } = state.stats;
+    let arch = "BALANCE HYBRID";
+    if (str > spd && str > sta && str > tac) arch = "POWER SLUGGER";
+    else if (spd > str && spd > sta && spd > tac) arch = "SPEED OUT-BOXER";
+    else if (sta > str && sta > spd && sta > tac) arch = "PRESSURE GRINDER";
+    else if (tac > str && tac > spd && tac > sta) arch = "TECHNICAL INTERCEPTOR";
+    const el = document.getElementById("styleArchetypeDisplay");
+    if (el) el.innerText = `STYLE TYPE: ${arch}`;
+}
+
+// ─── RADAR CHART ──────────────────────────────────────────────────────────────────
+function renderRadarChart() {
+    const canvas = document.getElementById("radarCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2, R = Math.min(W, H) * 0.38;
+    const labels = ["STR", "SPD", "STA", "TAC"];
+    const vals = [state.stats.str, state.stats.spd, state.stats.sta, state.stats.tac];
+    const max = CONFIG.STAT_MAX;
+    const angles = labels.map((_, i) => (Math.PI * 2 * i / labels.length) - Math.PI / 2);
+    const accentColor = "#4fc3f7";
+    const gridColor = "rgba(255,255,255,0.08)";
+    const labelColor = "#aaa";
+    ctx.clearRect(0, 0, W, H);
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+        ctx.beginPath();
+        angles.forEach((a, i) => {
+            const x = cx + Math.cos(a) * R * f, y = cy + Math.sin(a) * R * f;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+    angles.forEach(a => {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+        const r = (vals[i] / max) * R;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = "rgba(79,195,247,0.18)";
+    ctx.fill();
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    angles.forEach((a, i) => {
+        const r = (vals[i] / max) * R;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = accentColor;
+        ctx.fill();
+    });
+    ctx.font = "bold 11px 'Share Tech Mono', monospace";
+    ctx.fillStyle = labelColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    angles.forEach((a, i) => {
+        const offset = 18;
+        const x = cx + Math.cos(a) * (R + offset);
+        const y = cy + Math.sin(a) * (R + offset);
+        ctx.fillText(`${labels[i]} ${vals[i]}`, x, y);
+    });
+}
+
+    // === src/timer.js ===
+function toggleTimer() {
+    const btn = document.getElementById("timerStartBtn");
+    const statusLabel = document.getElementById("timerStatus");
+    if (state.timer.isRunning) {
+        clearInterval(state.timer.instance); state.timer.isRunning = false;
+        btn.innerText = "Resume Round"; btn.classList.remove("active-run");
+        statusLabel.innerText = `${state.timer.mode} PAUSED`;
+    } else {
+        state.timer.isRunning = true; btn.innerText = "Pause Round"; btn.classList.add("active-run");
+        statusLabel.innerText = state.timer.mode === 'WORK' ? "ROUND LIVE - WORK HARD" : "RESTING - ACTIVE RECOVERY";
+        state.timer.instance = setInterval(() => { state.timer.timeLeft--; renderTimerLayoutDisplay(); if (state.timer.timeLeft <= 0) cycleTimerNextMode(); }, 1000);
+    }
+}
+
+function cycleTimerNextMode() {
+    const timerDisplay = document.getElementById("timerTime");
+    const statusLabel = document.getElementById("timerStatus");
+    if (state.timer.mode === 'WORK') {
+        state.timer.mode = 'REST'; state.timer.timeLeft = state.timer.restDuration;
+        statusLabel.innerText = "RESTING - ACTIVE RECOVERY"; timerDisplay.classList.add("visual-flash"); playTone(440, 0.2);
+        const today = todayString();
+        if (state.lastStreakDate !== today) { state.streak++; state.lastStreakDate = today; document.getElementById("streakDisplay").innerText = state.streak; saveStateToStorage(); }
+    } else {
+        state.timer.mode = 'WORK'; state.timer.timeLeft = state.timer.workDuration;
+        statusLabel.innerText = "ROUND LIVE - WORK HARD"; timerDisplay.classList.remove("visual-flash"); playTone(660, 0.15);
+    }
+    renderTimerLayoutDisplay();
+}
+
+function resetTimer() {
+    clearInterval(state.timer.instance); state.timer.isRunning = false; state.timer.mode = 'WORK'; state.timer.timeLeft = state.timer.workDuration;
+    const btn = document.getElementById("timerStartBtn"); btn.innerText = "Start Round"; btn.classList.remove("active-run");
+    document.getElementById("timerTime").classList.remove("visual-flash");
+    document.getElementById("timerStatus").innerText = "BOXING TIMER IDLE"; renderTimerLayoutDisplay();
+}
+
+function renderTimerLayoutDisplay() {
+    const m = Math.floor(state.timer.timeLeft / 60), s = state.timer.timeLeft % 60;
+    document.getElementById("timerTime").innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function playTone(freq, duration) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq; osc.type = 'sine';
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+}
+
+    // === src/weight.js ===
+function submitWeightEntry() {
+    const input = document.getElementById("weightInputField");
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val > 0) {
+        state.currentWeightDisplay = val; input.placeholder = val.toFixed(1);
+        state.weightHistory.unshift({ date: todayISO(), weight: val });
+        if (state.weightHistory.length > CONFIG.MAX_WEIGHT_HISTORY) state.weightHistory = state.weightHistory.slice(0, CONFIG.MAX_WEIGHT_HISTORY);
+        renderWeightHistory(); saveStateToStorage();
+    }
+    input.value = ""; forceIosKeyboardReset();
+}
+
+function quickAdjustWeight(delta) {
+    state.currentWeightDisplay = Math.max(0, state.currentWeightDisplay + delta);
+    document.getElementById("weightInputField").placeholder = state.currentWeightDisplay.toFixed(1);
+    state.weightHistory.unshift({ date: todayISO(), weight: state.currentWeightDisplay });
+    if (state.weightHistory.length > CONFIG.MAX_WEIGHT_HISTORY) state.weightHistory = state.weightHistory.slice(0, CONFIG.MAX_WEIGHT_HISTORY);
+    renderWeightHistory(); saveStateToStorage();
+}
+
+function renderWeightHistory() {
+    const container = document.getElementById("weightHistoryList");
+    if (!container) return;
+    if (!state.weightHistory || state.weightHistory.length === 0) { container.innerHTML = '<div class="weight-empty">No entries yet. Log your first weight above.</div>'; return; }
+    container.innerHTML = state.weightHistory.map(e => `<div class="weight-history-entry"><span class="wh-date">${e.date}</span><span class="wh-val">${parseFloat(e.weight).toFixed(1)} LBS</span></div>`).join('');
+}
+
+    // === src/guide.js ===
+function rebuildSyllabusTiers() {
+    const container = document.getElementById("syllabusContainer");
+    if (!container) return;
+    container.innerHTML = '<div class="panel-title-row"><span class="panel-title">Gym Progression Steps</span></div>';
+    const levels = [
+        { name: "STAGE I: RECRUIT PLATFORM", range: "Ranks 1-3", cond: state.careerRank <= 3, desc: "Master basic punch geometry (straight lines), stable stances, and avoiding crossed steps while moving." },
+        { name: "STAGE II: CONTENDER CIRCUITS", range: "Ranks 4-6", cond: (state.careerRank >= 4 && state.careerRank <= 6), desc: "Learn head-to-body target shifting, 90-degree lateral angle pivot steps, and variable rhythm punch speeds." },
+        { name: "STAGE III: CHAMPIONSHIP CORE", range: "Ranks 7-9", cond: state.careerRank >= 7, desc: "Advanced fake/bait loops, working inside close phone-booth distances safely, and elastic spring foot movements." }
+    ];
+    levels.forEach(lvl => {
+        const div = document.createElement("div");
+        div.className = `syllabus-tier ${lvl.cond ? 'current' : ''}`;
+        div.innerHTML = `<div class="tier-header"><span>${lvl.name}</span><span class="tier-status">${lvl.cond ? '[YOUR ACTIVE GOAL]' : '[STANDBY]'}</span></div><p style="font-size:0.8rem; color:var(--accent-blue); margin-bottom:4px;">${lvl.range}</p><div class="tier-reqs">${lvl.desc}</div>`;
+        container.appendChild(div);
+    });
+}
+
+    </script>
+</body>
+</html>
